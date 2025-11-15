@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Project - Trume</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Google Fonts - SF Pro (iOS style font) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="css/shared.css" rel="stylesheet">
+    <script src="js/shared.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#007AFF',
+                        secondary: '#5856D6',
+                        dark: '#000000',
+                        darkSecondary: '#1C1C1E',
+                        light: '#FFFFFF',
+                        lightGray: '#8E8E93',
+                        mediumGray: '#3A3A3C',
+                        darkGray: '#2C2C2E',
+                        success: '#34C759',
+                        warning: '#FF9500',
+                        error: '#FF3B30',
+                        'activity-bg': '#F5F5F7',
+                        'activity-text': '#1D1D1F',
+                    },
+                    fontFamily: {
+                        'sf-pro': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            /* iOS Screen styles moved to shared.css */
+            .action-button {
+                background-color: #007AFF;
+                transition: all 0.2s ease;
+            }
+            .action-button:active {
+                transform: scale(0.98);
+                opacity: 0.8;
+            }
+            .activity-view {
+                border-top-left-radius: 24px;
+                border-top-right-radius: 24px;
+                box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+                transform: translateY(0);
+                transition: transform 0.3s ease-out;
+            }
+            .activity-view-hidden {
+                transform: translateY(100%);
+            }
+            .avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background-color: #D1D1D6;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #1D1D1F;
+                font-weight: 500;
+                transition: all 0.2s ease;
+            }
+            .app-icon {
+                width: 56px;
+                height: 56px;
+                border-radius: 14px;
+                background-color: #F2F2F7;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #1D1D1F;
+                font-size: 24px;
+                transition: all 0.2s ease;
+            }
+            .app-icon:active {
+                transform: scale(0.95);
+            }
+            .nav-button {
+                transition: all 0.2s ease;
+            }
+            .nav-button:active {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
+            .send-button {
+                transition: all 0.2s ease;
+            }
+            .send-button:active {
+                transform: scale(0.95);
+                background-color: rgba(59, 130, 246, 0.3);
+            }
+            .close-button {
+                transition: all 0.2s ease;
+            }
+            .close-button:active {
+                transform: scale(0.95);
+                background-color: rgba(229, 231, 235, 1);
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.5s ease-in-out;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            .animate-slide-up {
+                animation: slideUp 0.5s ease-out;
+            }
+            @keyframes slideUp {
+                from { transform: translateY(20px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            .toast {
+                background-color: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(20px);
+                padding: 12px 16px;
+                border-radius: 20px;
+                color: white;
+                font-size: 15px;
+                display: flex;
+                align-items: center;
+                animation: fadeIn 0.3s ease-in-out;
+            }
+            .toast i {
+                margin-right: 8px;
+                font-size: 16px;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .backdrop-blur {
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-black font-sf-pro min-h-screen flex items-center justify-center">
+    <div class="ios-screen">
+        <!-- Status Bar -->
+        <div class="h-8 bg-dark z-50 flex items-center justify-between px-5">
+            <div class="text-xs text-white font-medium">9:41</div>
+            <div class="flex items-center space-x-2 text-white text-xs">
+                <i class="fa fa-signal"></i>
+                <i class="fa fa-wifi"></i>
+                <i class="fa fa-battery-full"></i>
+            </div>
+        </div>
+        
+        <!-- Navigation Bar -->
+        <nav class="flex items-center justify-between px-5 py-4 bg-dark/90 backdrop-blur animate-fade-in z-20">
+            <div class="flex items-center">
+                <button id="back-button" class="p-2 rounded-full nav-button">
+                    <i class="fa fa-arrow-left text-white text-xl"></i>
+                </button>
+                <div class="ml-4 flex items-center">
+                    <span class="text-light text-lg font-semibold">Project</span>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Main Content Area -->
+        <div class="flex-1">
+            <img src="https://picsum.photos/800/1200?random=20" alt="Image Preview" class="w-full h-full object-cover">
+            <!-- Overlay gradient for better visibility of action buttons -->
+            <div class="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-dark to-transparent"></div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="p-5 z-10 animate-slide-up">
+            <div class="flex justify-between gap-4">
+                <button id="save-button" class="flex-1 h-12 rounded-xl action-button flex items-center justify-center gap-3 shadow-lg">
+                    <i class="fa fa-save text-white"></i>
+                    <span class="text-white font-medium">Save</span>
+                </button>
+                <button id="share-button" class="flex-1 h-12 rounded-xl action-button flex items-center justify-center gap-3 shadow-lg">
+                    <i class="fa fa-share-alt text-white"></i>
+                    <span class="text-white font-medium">Share</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Toast Message Container -->
+        <div id="toast-container" class="fixed inset-0 pointer-events-none z-50 flex items-center justify-center"></div>
+        
+        <!-- Share Activity View (Bottom Sheet) -->
+        <div id="share-activity-view" class="activity-view absolute bottom-0 left-0 right-0 h-[500px] bg-activity-bg z-20 transition-transform duration-300 activity-view-hidden">
+            <!-- Overlay Background -->
+            <div id="share-overlay" class="fixed inset-0 bg-black/70 backdrop-blur z-10 pointer-events-none opacity-0 transition-opacity duration-300"></div>
+            <!-- Header -->
+            <div class="flex items-center justify-between p-5 border-b border-gray-200">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-lg bg-gray-200 overflow-hidden shadow-sm">
+                        <img src="https://picsum.photos/100/100?random=21" alt="Preview" class="w-full h-full object-cover">
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-activity-text font-medium">Share Image</h3>
+                        <p class="text-gray-500 text-sm">Select where to share</p>
+                    </div>
+                </div>
+                <button id="close-activity" class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center close-button">
+                    <i class="fa fa-times text-gray-600"></i>
+                </button>
+            </div>
+            
+            <!-- Suggested Contacts -->
+            <div class="p-5 border-b border-gray-200">
+                <h4 class="text-activity-text font-medium mb-3">Suggested</h4>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="avatar">
+                                <span>SW</span>
+                            </div>
+                            <span class="ml-3 text-activity-text">Sandy Wilder Cheng</span>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center send-button">
+                            <i class="fa fa-paper-plane text-blue-500"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="avatar">
+                                <span>KL</span>
+                            </div>
+                            <span class="ml-3 text-activity-text">Kevin Leong</span>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center send-button">
+                            <i class="fa fa-paper-plane text-blue-500"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="avatar">
+                                <span>JM</span>
+                            </div>
+                            <span class="ml-3 text-activity-text">Juliana Mejia</span>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center send-button">
+                            <i class="fa fa-paper-plane text-blue-500"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Share Apps -->
+            <div class="p-5">
+                <h4 class="text-activity-text font-medium mb-3">Share to</h4>
+                <div class="grid grid-cols-4 gap-5">
+                    <div class="flex flex-col items-center">
+                        <div class="app-icon mb-2">
+                            <i class="fa fa-comment text-blue-500"></i>
+                        </div>
+                        <span class="text-xs text-activity-text">Messages</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="app-icon mb-2">
+                            <i class="fa fa-envelope text-red-500"></i>
+                        </div>
+                        <span class="text-xs text-activity-text">Mail</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="app-icon mb-2">
+                            <i class="fa fa-sticky-note-o text-yellow-500"></i>
+                        </div>
+                        <span class="text-xs text-activity-text">Notes</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="app-icon mb-2">
+                            <i class="fa fa-calendar-check-o text-green-500"></i>
+                        </div>
+                        <span class="text-xs text-activity-text">Reminders</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="app-icon mb-2">
+                            <i class="fa fa-whatsapp text-green-600"></i>
+                        </div>
+                        <span class="text-xs text-activity-text">WhatsApp</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="app-icon mb-2">
+                            <i class="fa fa-facebook text-blue-600"></i>
+                        </div>
+                        <span class="text-xs text-activity-text">Facebook</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="app-icon mb-2">
+                            <i class="fa fa-instagram text-pink-500"></i>
+                        </div>
+                        <span class="text-xs text-activity-text">Instagram</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="app-icon mb-2">
+                            <i class="fa fa-ellipsis-h text-gray-500"></i>
+                        </div>
+                        <span class="text-xs text-activity-text">More</span>
+                    </div>
+                    
+                    <!-- Add an extra line of spacing -->
+                    <div class="h-16"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+          // 共享函数已通过window对象挂载，无需导入
+          
+          document.addEventListener('DOMContentLoaded', function() {
+            // 初始化共享功能
+              window.initializeSharedFunctions();
+              
+              // 显示初始欢迎提示
+              window.showToast('Project loaded successfully', 'fa-info-circle', 3000);
+            
+            // 返回按钮功能
+            const backButton = document.getElementById('back-button');
+            if (backButton) {
+                backButton.addEventListener('click', function() {
+                    window.buttonClickAnimation(backButton, function() {
+                        window.goBack();
+                    });
+                });
+            }
+            
+            // 保存按钮功能
+            const saveButton = document.getElementById('save-button');
+            if (saveButton) {
+                // 确保按钮在最上层，没有被其他元素覆盖
+                saveButton.style.zIndex = '100';
+                
+                // 使用简单的事件绑定
+                saveButton.onclick = function() {
+                    // 添加点击动画
+                    window.buttonClickAnimation(this);
+                    
+                    // 立即显示提示，不使用额外的延迟
+                    window.showToast('Save successfully.', 'fa-check-circle', 2000);
+                };
+            } else {
+                console.error('Save button not found!');
+            }
+            
+            // Share activity view elements
+            const shareButton = document.getElementById('share-button');
+            const shareActivityView = document.getElementById('share-activity-view');
+            const shareOverlay = document.getElementById('share-overlay');
+            const closeActivity = document.getElementById('close-activity');
+            
+            // Show/hide share activity view
+            function showShareActivity() {
+                shareActivityView.classList.remove('activity-view-hidden');
+                shareOverlay.classList.remove('opacity-0', 'pointer-events-none');
+                window.showToast('Share options', 'fa-share-alt', 3000);
+            }
+            
+            function hideShareActivity() {
+                shareActivityView.classList.add('activity-view-hidden');
+                shareOverlay.classList.add('opacity-0', 'pointer-events-none');
+            }
+            
+            // 分享按钮功能
+            if (shareButton && shareActivityView && shareOverlay) {
+                // 确保按钮在最上层，没有被其他元素覆盖
+                shareButton.style.zIndex = '100';
+                
+                // 使用简单的事件绑定
+                shareButton.onclick = function() {
+                    // 添加点击动画
+                    window.buttonClickAnimation(this, function() {
+                        // 立即显示分享面板
+                        showShareActivity();
+                    });
+                };
+                
+                // 关闭按钮功能
+                if (closeActivity) {
+                    closeActivity.addEventListener('click', function() {
+                        window.buttonClickAnimation(this);
+                        setTimeout(() => {
+                            hideShareActivity();
+                        }, 150);
+                    });
+                }
+                
+                // 点击覆盖层关闭
+                if (shareOverlay) {
+                    shareOverlay.addEventListener('click', function() {
+                        hideShareActivity();
+                    });
+                }
+            } else {
+                console.error('Share button or related elements not found!');
+            }
+            
+            // Simulate share functionality for app icons
+            const appIcons = document.querySelectorAll('.app-icon');
+            appIcons.forEach(icon => {
+                icon.addEventListener('click', function() {
+                    window.buttonClickAnimation(this);
+                    setTimeout(() => {
+                        const appName = this.nextElementSibling.textContent;
+                        window.showToast(`Sharing to ${appName}...`, 'fa-share-alt', 2000);
+                        
+                        // Simulate sharing process
+                        setTimeout(() => {
+                            window.showToast(`Shared successfully via ${appName}`, 'fa-check-circle', 3000);
+                            setTimeout(hideShareActivity, 1500);
+                        }, 1500);
+                    }, 150);
+                });
+            });
+            
+            // Simulate sending to contacts
+            const sendButtons = document.querySelectorAll('.fa-paper-plane');
+            sendButtons.forEach(button => {
+                const buttonElement = button.parentElement;
+                
+                buttonElement.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    window.buttonClickAnimation(this);
+                    setTimeout(() => {
+                        const contactName = this.parentElement.querySelector('span').textContent;
+                        window.showToast(`Sending to ${contactName}...`, 'fa-paper-plane', 2000);
+                        
+                        // Simulate sending process
+                        setTimeout(() => {
+                            window.showToast(`Sent successfully to ${contactName}`, 'fa-check-circle', 3000);
+                            setTimeout(hideShareActivity, 1500);
+                        }, 1500);
+                    }, 150);
+                });
+            });
+            
+            // Add animation to avatar on hover
+            const avatars = document.querySelectorAll('.avatar');
+            avatars.forEach(avatar => {
+                avatar.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.05)';
+                });
+                avatar.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+            
+            // Add subtle hover effect to suggested contacts
+            const contactItems = document.querySelectorAll('.flex.items-center.justify-between');
+            contactItems.forEach(item => {
+                item.addEventListener('touchstart', function() {
+                    this.style.opacity = '0.9';
+                });
+                
+                item.addEventListener('touchend', function() {
+                    this.style.opacity = '1';
+                });
+            });
+            
+
+        });
+    </script>
+</body>
+</html>

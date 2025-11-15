@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Select Photo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Google Fonts - SF Pro (iOS style font) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="css/shared.css" rel="stylesheet">
+    <script src="js/shared.js"></script>
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#007AFF',
+                        secondary: '#5856D6',
+                        dark: '#000000',
+                        darkSecondary: '#1C1C1E',
+                        light: '#FFFFFF',
+                        lightGray: '#8E8E93',
+                        mediumGray: '#3A3A3C',
+                        darkGray: '#2C2C2E',
+                        success: '#34C759',
+                        warning: '#FF9500',
+                        error: '#FF3B30'
+                    },
+                    fontFamily: {
+                        'sf-pro': ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'scale-in': 'scaleIn 0.2s ease-out'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        scaleIn: {
+                            '0%': { transform: 'scale(0)' },
+                            '100%': { transform: 'scale(1)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Styles -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            /* iOS Screen styles moved to shared.css */
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .photo-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1px;
+                background-color: #1C1C1E;
+            }
+            .photo-item {
+                position: relative;
+                overflow: hidden;
+            }
+            .photo-item.selected::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 122, 255, 0.2);
+                z-index: 10;
+            }
+            .selected-indicator {
+                position: absolute;
+                top: 6px;
+                right: 6px;
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                background-color: #007AFF;
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 13px;
+                font-weight: 600;
+                z-index: 20;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            }
+            .nav-button {
+                transition: all 0.2s ease;
+            }
+            .nav-button:active {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
+            .toast {
+                background-color: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(20px);
+                padding: 12px 16px;
+                border-radius: 20px;
+                color: white;
+                font-size: 15px;
+                display: flex;
+                align-items: center;
+                animation: fadeIn 0.3s ease-in-out;
+            }
+            .toast i {
+                margin-right: 8px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-black text-white font-sf-pro min-h-screen flex items-center justify-center">
+    <div class="ios-screen">
+    <!-- Status Bar -->
+    <div class="h-8 bg-dark z-50 flex items-center justify-between px-5">
+        <div class="text-xs text-white font-medium">9:41</div>
+        <div class="flex items-center space-x-2 text-white text-xs">
+            <i class="fa fa-signal"></i>
+            <i class="fa fa-wifi"></i>
+            <i class="fa fa-battery-full"></i>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="flex items-center justify-between px-5 py-4 bg-dark animate-fade-in backdrop-blur bg-dark/90">
+        <div class="flex items-center">
+            <button id="back-button" class="p-2 rounded-full nav-button">
+                <i class="fa fa-arrow-left text-white text-xl"></i>
+            </button>
+            <div class="ml-4 flex items-center">
+                <span class="text-white98 text-lg font-semibold">All photos</span>
+                <i class="fa fa-chevron-down ml-2 text-gray-400 text-xs"></i>
+            </div>
+        </div>
+        <div class="flex items-center">
+            <span id="selected-count" class="text-white text-sm hidden">
+                <span id="count-number">0</span> selected
+            </span>
+            <button id="next-button" class="ml-4 px-4 py-1.5 rounded-full bg-primary text-white text-sm font-medium hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/30 nav-button">
+                Next
+            </button>
+        </div>
+    </nav>
+
+    <!-- Photo Grid -->
+    <div class="flex-1 overflow-y-auto scrollbar-hide">
+        <div class="photo-grid">
+            <!-- Sample photos with selection capability -->
+            <div class="photo-item aspect-square bg-darkSecondary animate-slide-up" style="animation-delay: 0.05s">
+                <img src="https://picsum.photos/400/400?random=1" alt="Sample photo" class="w-full h-full object-cover">
+            </div>
+            <div class="photo-item aspect-square bg-darkSecondary animate-slide-up" style="animation-delay: 0.1s">
+                <img src="https://picsum.photos/400/400?random=2" alt="Sample photo" class="w-full h-full object-cover">
+            </div>
+            <div class="photo-item aspect-square bg-darkSecondary animate-slide-up" style="animation-delay: 0.15s">
+                <img src="https://picsum.photos/400/400?random=3" alt="Sample photo" class="w-full h-full object-cover">
+            </div>
+            <div class="photo-item aspect-square bg-darkSecondary animate-slide-up" style="animation-delay: 0.2s">
+                <img src="https://picsum.photos/400/400?random=4" alt="Sample photo" class="w-full h-full object-cover">
+            </div>
+            <div class="photo-item aspect-square bg-darkSecondary animate-slide-up" style="animation-delay: 0.25s">
+                <img src="https://picsum.photos/400/400?random=5" alt="Sample photo" class="w-full h-full object-cover">
+            </div>
+            <div class="photo-item aspect-square bg-darkSecondary animate-slide-up" style="animation-delay: 0.3s">
+                <img src="https://picsum.photos/400/400?random=6" alt="Sample photo" class="w-full h-full object-cover">
+            </div>
+            <div class="photo-item aspect-square bg-darkSecondary animate-slide-up" style="animation-delay: 0.35s">
+                <img src="https://picsum.photos/400/400?random=7" alt="Sample photo" class="w-full h-full object-cover">
+            </div>
+            <div class="photo-item aspect-square bg-darkSecondary animate-slide-up" style="animation-delay: 0.4s">
+                <img src="https://picsum.photos/400/400?random=8" alt="Sample photo" class="w-full h-full object-cover">
+            </div>
+            <div class="photo-item aspect-square bg-darkSecondary animate-slide-up" style="animation-delay: 0.45s">
+                <img src="https://picsum.photos/400/400?random=9" alt="Sample photo" class="w-full h-full object-cover">
+            </div>
+            <div class="photo-item aspect-square bg-darkSecondary animate-slide-up" style="animation-delay: 0.5s">
+                <img src="https://picsum.photos/400/400?random=10" alt="Sample photo" class="w-full h-full object-cover">
+            </div>
+            <div class="photo-item aspect-square bg-darkSecondary animate-slide-up" style="animation-delay: 0.55s">
+                <img src="https://picsum.photos/400/400?random=11" alt="Sample photo" class="w-full h-full object-cover">
+            </div>
+            <div class="photo-item aspect-square bg-darkSecondary animate-slide-up" style="animation-delay: 0.6s">
+                <img src="https://picsum.photos/400/400?random=12" alt="Sample photo" class="w-full h-full object-cover">
+            </div>
+            <div class="photo-item aspect-square bg-darkSecondary animate-slide-up" style="animation-delay: 0.65s">
+                <img src="https://picsum.photos/400/400?random=13" alt="Sample photo" class="w-full h-full object-cover">
+            </div>
+            <div class="photo-item aspect-square bg-darkSecondary animate-slide-up" style="animation-delay: 0.7s">
+                <img src="https://picsum.photos/400/400?random=14" alt="Sample photo" class="w-full h-full object-cover">
+            </div>
+            <div class="photo-item aspect-square bg-darkSecondary animate-slide-up" style="animation-delay: 0.75s">
+                <img src="https://picsum.photos/400/400?random=15" alt="Sample photo" class="w-full h-full object-cover">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed inset-0 pointer-events-none flex items-center justify-center z-50"></div>
+
+    <script>
+        // 共享函数已通过window对象挂载，无需导入
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化共享功能
+            window.initializeSharedFunctions();
+            
+            // Back button functionality
+            const backButton = document.getElementById('back-button');
+            if (backButton) {
+                backButton.addEventListener('click', function() {
+                    window.buttonClickAnimation(this);
+                    setTimeout(() => {
+                        window.location.href = 'camera.html';
+                    }, 150);
+                });
+            }
+
+            // Next button functionality
+            const nextButton = document.getElementById('next-button');
+            const selectedCountElement = document.getElementById('selected-count');
+            const countNumberElement = document.getElementById('count-number');
+            let selectedCount = 0;
+            const selectedPhotos = [];
+            const selectedPhotoIndices = new Set();
+
+            // Add click event to all photos
+            const photoItems = document.querySelectorAll('.photo-item');
+            photoItems.forEach(function(photo, index) {
+                photo.addEventListener('click', function() {
+                    // Toggle selection state
+                    if (photo.classList.contains('selected')) {
+                        // Create deselection animation
+                        const indicator = photo.querySelector('.selected-indicator');
+                        if (indicator) {
+                            indicator.style.transform = 'scale(0)';
+                            indicator.style.transition = 'transform 0.2s ease';
+                        }
+                        
+                        setTimeout(() => {
+                            photo.classList.remove('selected');
+                            if (indicator) {
+                                indicator.remove();
+                            }
+                        }, 200);
+                        
+                        selectedCount--;
+                        selectedPhotoIndices.delete(index);
+                        window.showToast('Photo deselected', 'fa-times-circle');
+                    } else {
+                        // Add new selection with animation
+                        photo.classList.add('selected');
+                        const indicator = document.createElement('div');
+                        indicator.className = 'selected-indicator';
+                        selectedCount++;
+                        indicator.textContent = selectedCount;
+                        indicator.style.transform = 'scale(0)';
+                        photo.appendChild(indicator);
+                        
+                        // Animate the indicator
+                        setTimeout(() => {
+                            indicator.style.transform = 'scale(1)';
+                            indicator.style.transition = 'transform 0.2s ease';
+                        }, 50);
+                        
+                        selectedPhotoIndices.add(index);
+                        // Store selected photo URL
+                        const img = photo.querySelector('img');
+                        if (img) {
+                            selectedPhotos.push({
+                                index: index,
+                                src: img.src,
+                                alt: img.alt
+                            });
+                        }
+                        window.showToast('Photo selected', 'fa-check-circle');
+                    }
+
+                    // Update UI based on selection count
+                    if (selectedCount > 0) {
+                        selectedCountElement.classList.remove('hidden');
+                        nextButton.classList.remove('hidden');
+                        countNumberElement.textContent = selectedCount;
+                    } else {
+                        selectedCountElement.classList.add('hidden');
+                        nextButton.classList.add('hidden');
+                    }
+                });
+            });
+
+            // Next button click handler
+            if (nextButton) {
+                nextButton.addEventListener('click', function() {
+                    window.buttonClickAnimation(this);
+                    
+                    // Get existing photos using our helper function
+                    const existingPhotos = window.getStorageItem('selectedPhotos', []) || [];
+                    
+                    // Append new selected photos to existing ones
+                    const updatedPhotos = [...existingPhotos, ...selectedPhotos];
+                    
+                    // Save updated photos using our helper function
+                    window.setStorageItem('selectedPhotos', updatedPhotos);
+                        
+                    window.showToast('Photos added!', 'fa-check', 1500);
+                        
+                    // Use our navigateTo function for cleaner navigation
+                    window.navigateTo('home.html', 1500);
+                });
+            }
+            
+            // Add subtle hover effect to photos
+            photoItems.forEach(function(photo) {
+                photo.addEventListener('touchstart', function() {
+                    this.style.opacity = '0.9';
+                });
+                
+                photo.addEventListener('touchend', function() {
+                    this.style.opacity = '1';
+                });
+            });
+            
+            // Show welcome toast
+            window.showToast('Select a photo to edit', 'fa-images', 3000);
+        });
+    </script>
+</body>
+</html>

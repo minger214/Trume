@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trume - Templates</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="css/shared.css" rel="stylesheet">
+    <script src="js/shared.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#090A0A',
+                        darkSecondary: '#191919',
+                        white: '#FFFFFF',
+                        white98: '#FAFAFA',
+                        white50: '#808080',
+                        primary: '#8247E5',
+                        secondary: '#D434FE',
+                        accent: '#FF2E93',
+                        grayDark: '#28282B',
+                    },
+                    fontFamily: {
+                        'sf-pro': ['SF Pro', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            /* iOS Screen styles moved to shared.css */
+            .template-card {
+                border-radius: 16px;
+                overflow: hidden;
+                transition: all 0.3s ease;
+            }
+            /* Hover effects removed for iOS, using active state instead */
+            .template-card:active {
+                transform: scale(0.95);
+            }
+            .bg-pattern {
+                background-image: radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 90%);
+                background-size: 20px 20px;
+            }
+            .action-button {
+                background: linear-gradient(90deg, #8247E5 0%, #D434FE 100%);
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 12px rgba(130, 71, 229, 0.3);
+            }
+            /* Hover effects removed for iOS, using active state instead */
+            .action-button:active {
+                transform: scale(0.95);
+            }
+            .template-preview-container {
+                height: calc(100% - 14rem);
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.5s ease-in-out;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            .animate-slide-up {
+                animation: slideUp 0.5s ease-out;
+            }
+            @keyframes slideUp {
+                from { transform: translateY(20px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            .nav-button {
+                transition: all 0.3s ease;
+            }
+            .nav-button:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                transform: scale(1.05);
+            }
+            .nav-button:active {
+                transform: scale(0.95);
+            }
+            .category-button {
+                transition: all 0.3s ease;
+            }
+            .category-button:active {
+                transform: scale(0.95);
+            }
+            .template-option {
+                transition: all 0.3s ease;
+            }
+            .template-option:hover {
+                transform: scale(1.03);
+            }
+            .template-option:active {
+                transform: scale(0.95);
+            }
+            .backdrop-blur {
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+            }
+            .toast-message {
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 12px 20px;
+                background-color: rgba(25, 25, 25, 0.9);
+                color: white;
+                border-radius: 24px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+                z-index: 9999;
+                animation: slideUp 0.3s ease-out;
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-dark font-sf-pro min-h-screen flex items-center justify-center">
+    <!-- Android Device Container -->
+    <!-- iOS Device Container -->
+    <div class="ios-screen mx-auto bg-dark">
+        <!-- Status Bar - iOS Style -->
+        <div class="h-8 bg-dark z-50 flex items-center justify-between px-5">
+            <div class="text-xs text-white font-medium">9:41</div>
+            <div class="flex items-center space-x-2 text-white text-xs">
+                <i class="fa fa-signal"></i>
+                <i class="fa fa-wifi"></i>
+                <i class="fa fa-battery-full"></i>
+            </div>
+        </div>
+        
+        <!-- Navigation Bar -->
+        <div class="px-4 py-3 flex items-center border-b border-white/10 animate-fade-in bg-dark/90 backdrop-blur">
+            <button id="back-button" class="p-2 rounded-full hover:bg-white/5 transition-colors nav-button"><i class="fa fa-arrow-left text-white text-lg"></i></button>
+            <h1 class="text-white text-xl font-bold ml-2">Templates</h1>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="px-4 py-6 overflow-y-auto max-h-[calc(100%-6rem)]">
+            <!-- Template Categories -->
+            <div class="flex space-x-3 mb-6 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+                <button class="category-button px-4 py-2 rounded-full bg-primary text-white text-sm font-medium whitespace-nowrap shadow-lg shadow-primary/20">Preset Styles</button>
+                <button class="category-button px-4 py-2 rounded-full bg-darkSecondary text-white50 text-sm font-medium whitespace-nowrap hover:bg-darkSecondary/80 transition-colors">Custom</button>
+            </div>
+            
+            <!-- Template Preview -->
+            <div class="template-preview-container mb-6 animate-fade-in">
+                <div class="relative rounded-2xl overflow-hidden shadow-xl">
+                    <img id="template-preview-image" src="https://picsum.photos/600/800?random=5" alt="Template Preview" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark to-transparent opacity-40"></div>
+                    <div class="absolute bottom-4 left-4 right-4 bg-dark/80 rounded-xl p-3 backdrop-blur-sm">
+                        <h2 id="template-preview-title" class="text-white font-bold">Ethereal Portrait</h2>
+                        <p id="template-preview-description" class="text-white50 text-xs mt-1">Professional AI-generated portrait template</p>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Template Options -->
+            <div class="grid grid-cols-3 gap-3 mb-8">
+                <div class="template-option bg-darkSecondary rounded-xl p-2 text-center cursor-pointer hover:bg-darkSecondary/80 transition-colors animate-slide-up" style="animation-delay: 0.1s">
+                    <img data-preview-image="https://picsum.photos/600/800?random=1" data-preview-title="ID Photo Style" data-preview-description="Professional ID photo style" src="https://picsum.photos/100/100?random=11" alt="ID Photo" class="w-full aspect-square object-cover rounded-lg mb-1">
+                    <span class="text-xs text-white50">ID Photo</span>
+                </div>
+                <div class="template-option bg-darkSecondary rounded-xl p-2 text-center cursor-pointer hover:bg-darkSecondary/80 transition-colors animate-slide-up" style="animation-delay: 0.2s">
+                    <img data-preview-image="https://picsum.photos/600/800?random=2" data-preview-title="Business Attire" data-preview-description="Professional business attire style" src="https://picsum.photos/100/100?random=12" alt="Business Attire" class="w-full aspect-square object-cover rounded-lg mb-1">
+                    <span class="text-xs text-white50">Business</span>
+                </div>
+                <div class="template-option bg-darkSecondary rounded-xl p-2 text-center cursor-pointer hover:bg-darkSecondary/80 transition-colors animate-slide-up" style="animation-delay: 0.3s">
+                    <img data-preview-image="https://picsum.photos/600/800?random=3" data-preview-title="Spring Outfit" data-preview-description="Fresh spring clothing style" src="https://picsum.photos/100/100?random=13" alt="Spring Outfit" class="w-full aspect-square object-cover rounded-lg mb-1">
+                    <span class="text-xs text-white50">Spring</span>
+                </div>
+                <div class="template-option bg-darkSecondary rounded-xl p-2 text-center cursor-pointer hover:bg-darkSecondary/80 transition-colors animate-slide-up" style="animation-delay: 0.4s">
+                    <img data-preview-image="https://picsum.photos/600/800?random=4" data-preview-title="Summer Outfit" data-preview-description="Cool summer clothing style" src="https://picsum.photos/100/100?random=14" alt="Summer Outfit" class="w-full aspect-square object-cover rounded-lg mb-1">
+                    <span class="text-xs text-white50">Summer</span>
+                </div>
+                <div class="template-option bg-darkSecondary rounded-xl p-2 text-center cursor-pointer hover:bg-darkSecondary/80 transition-colors animate-slide-up" style="animation-delay: 0.5s">
+                    <img data-preview-image="https://picsum.photos/600/800?random=5" data-preview-title="Autumn Outfit" data-preview-description="Warm autumn clothing style" src="https://picsum.photos/100/100?random=15" alt="Autumn Outfit" class="w-full aspect-square object-cover rounded-lg mb-1">
+                    <span class="text-xs text-white50">Autumn</span>
+                </div>
+                <div class="template-option bg-darkSecondary rounded-xl p-2 text-center cursor-pointer hover:bg-darkSecondary/80 transition-colors animate-slide-up" style="animation-delay: 0.6s">
+                    <img data-preview-image="https://picsum.photos/600/800?random=6" data-preview-title="Winter Outfit" data-preview-description="Cozy winter clothing style" src="https://picsum.photos/100/100?random=16" alt="Winter Outfit" class="w-full aspect-square object-cover rounded-lg mb-1">
+                    <span class="text-xs text-white50">Winter</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="px-4 pb-4">
+            <div class="flex justify-between gap-4">
+                <button id="save-button" class="flex-1 h-12 rounded-xl action-button flex items-center justify-center gap-3 shadow-lg shadow-primary/20 transform hover:scale-105 transition-all">
+                    <i class="fa fa-save text-white"></i>
+                    <span class="text-white font-medium">Save</span>
+                </button>
+                <button id="share-button" class="flex-1 h-12 rounded-xl action-button flex items-center justify-center gap-3 shadow-lg shadow-primary/20 transform hover:scale-105 transition-all">
+                    <i class="fa fa-share-alt text-white"></i>
+                    <span class="text-white font-medium">Share</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Footer Indicator -->
+        <div class="flex justify-center mb-6">
+            <div class="w-32 h-1 bg-white bg-opacity-20 rounded-full">
+                <div class="w-1/3 h-full bg-primary rounded-full"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Message Container -->
+        <div id="toast-container" class="fixed inset-0 pointer-events-none z-50 flex items-center justify-center"></div>
+
+    <script>
+        // 共享函数已通过window对象挂载，无需导入
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化共享功能
+            window.initializeSharedFunctions();
+            
+            // Show initial welcome toast
+            window.showToast('Choose a template for your image', 'fa-magic', 3000);
+            
+            // Toast notification function is imported from shared.js
+
+            // Back button functionality
+            const backButton = document.getElementById('back-button');
+            if (backButton) {
+                backButton.addEventListener('click', function() {
+                    window.buttonClickAnimation(this);
+                    setTimeout(() => {
+                        window.location.href = 'home.html';
+                    }, 150);
+                });
+            }
+            
+            // Category buttons
+            const categoryButtons = document.querySelectorAll('.category-button');
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    window.buttonClickAnimation(this);
+                    
+                    // Remove active class from all category buttons
+                    categoryButtons.forEach(btn => {
+                        btn.classList.remove('bg-primary', 'text-white', 'shadow-lg', 'shadow-primary/20');
+                        btn.classList.add('bg-darkSecondary', 'text-white50');
+                    });
+                    // Add active class to clicked button
+                    this.classList.remove('bg-darkSecondary', 'text-white50');
+                    this.classList.add('bg-primary', 'text-white', 'shadow-lg', 'shadow-primary/20');
+                    
+                    // Show toast message
+                    window.showToast('Switched to ' + this.textContent.trim() + ' templates', 'fa-check-circle');
+                });
+            });
+            
+            // Template options selection and preview update
+            const templateOptions = document.querySelectorAll('.template-option');
+            const templatePreviewImage = document.getElementById('template-preview-image');
+            const templatePreviewTitle = document.getElementById('template-preview-title');
+            const templatePreviewDescription = document.getElementById('template-preview-description');
+            
+            templateOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    window.buttonClickAnimation(this);
+                    
+                    // Remove selected class from all options
+                    templateOptions.forEach(opt => {
+                        opt.classList.remove('border-2', 'border-primary');
+                    });
+                    // Add selected class to clicked option
+                    this.classList.add('border-2', 'border-primary');
+                    
+                    // Get the image element inside the clicked option
+                    const img = this.querySelector('img');
+                    if (img && img.dataset.previewImage) {
+                        // Update the preview with fade effect
+                        templatePreviewImage.style.opacity = '0';
+                        
+                        setTimeout(() => {
+                            // Update the preview image and details
+                            templatePreviewImage.src = img.dataset.previewImage;
+                            templatePreviewTitle.textContent = img.dataset.previewTitle;
+                            templatePreviewDescription.textContent = img.dataset.previewDescription;
+                            
+                            // Fade back in with slide up animation
+                            templatePreviewImage.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                            templatePreviewImage.style.transform = 'translateY(10px)';
+                            templatePreviewImage.style.opacity = '0';
+                            
+                            setTimeout(() => {
+                                templatePreviewImage.style.transform = 'translateY(0)';
+                                templatePreviewImage.style.opacity = '1';
+                            }, 50);
+                        }, 300);
+                    }
+                });
+            });
+            
+            // Save button functionality
+            const saveButton = document.getElementById('save-button');
+            if (saveButton) {
+                saveButton.addEventListener('click', function() {
+                    window.buttonClickAnimation(saveButton);
+                    
+                    // Show saving toast
+                    window.showToast('Saving template...', 'fa-spinner fa-spin', 2000);
+                    
+                    // Simulate saving process
+                    setTimeout(() => {
+                        window.showToast('Template saved to portfolio', 'fa-check', 2000);
+                        // Use navigateTo function for cleaner navigation
+                        window.navigateTo('portfolio-generating.html', 300);
+                    }, 800);
+                });
+            }
+            
+            // Share button functionality
+            const shareButton = document.getElementById('share-button');
+            if (shareButton) {
+                shareButton.addEventListener('click', function() {
+                    window.buttonClickAnimation(this);
+                    window.showToast('Template saved and sharing options coming soon!', 'fa-share-alt', 3000);
+                    // Use navigateTo function for cleaner navigation
+                    window.navigateTo('share.html', 150);
+                });
+            }
+            
+
+        });
+    </script>
+</body>
+</html>

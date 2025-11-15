@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trume - AI Photo Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="css/shared.css" rel="stylesheet">
+    <script src="js/shared.js"></script>
+    <!-- Google Fonts - SF Pro (iOS style font) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#007AFF',
+                        secondary: '#5856D6',
+                        dark: '#000000',
+                        darkSecondary: '#1C1C1E',
+                        light: '#FFFFFF',
+                        lightGray: '#8E8E93',
+                        mediumGray: '#3A3A3C',
+                        darkGray: '#2C2C2E',
+                        success: '#34C759',
+                        warning: '#FF9500',
+                        error: '#FF3B30'
+                    },
+                    fontFamily: {
+                        'sf-pro': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            /* iOS Screen styles moved to shared.css */
+            .text-shadow {
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            }
+            .logo-animation {
+                animation: pulse 2s ease-in-out infinite;
+            }
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.05); opacity: 0.9; }
+            }
+        }
+    </style>
+</head>
+<body class="bg-black font-sf-pro flex items-center justify-center min-h-screen">
+    <!-- iOS Device Container -->
+    <div class="ios-screen flex flex-col">
+        <!-- Status Bar - iOS Style -->
+        <div class="bg-dark h-8 px-5 flex justify-between items-center">
+            <div class="text-white font-medium text-xs">9:41</div>
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-signal text-white text-xs"></i>
+                <i class="fa fa-wifi text-white text-xs"></i>
+                <i class="fa fa-battery-full text-white text-xs"></i>
+            </div>
+        </div>
+        
+        <!-- Logo -->
+        <div class="flex-1 flex items-center justify-center">
+            <div class="logo-animation">
+                <img src="images/logo.svg" alt="Trume Logo" class="w-32 h-32">
+            </div>
+        </div>
+        
+        <!-- App Name -->
+        <div class="pb-24 text-center">
+            <h1 class="text-light text-xl font-semibold tracking-wide">Trume - AI Photo Generator</h1>
+        </div>
+    </div>
+    
+    <script>
+        // Auto redirect to home page after 2 seconds using our navigation helper
+        window.navigateTo('home.html', 2000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trume - Credit Purchase</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="css/shared.css" rel="stylesheet">
+    <script src="js/shared.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#090A0A',
+                        darkSecondary: '#191919',
+                        primary: '#8247E5',
+                        secondary: '#D434FE',
+                        accent: '#FF2E93',
+                        white: '#FFFFFF',
+                        white98: '#FAFAFA',
+                        grayDark: '#28282B',
+                    },
+                    fontFamily: {
+                        'sf-pro': ['SF Pro', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            /* iOS Screen styles moved to shared.css */
+            .gradient-background {
+                background: radial-gradient(circle at center, rgba(254, 208, 112, 0.2) 0%, rgba(33, 111, 99, 0.1) 100%);
+            }
+            .button-gradient {
+                background: linear-gradient(92deg, rgba(130, 71, 229, 1) 0%, rgba(212, 52, 254, 1) 45%, rgba(255, 46, 147, 1) 100%);
+            }
+            .checkmark-gradient {
+                background: linear-gradient(90deg, rgba(130, 71, 229, 1) 0%, rgba(212, 52, 254, 1) 100%);
+            }
+            .premium-gradient {
+                background: linear-gradient(90deg, rgba(255, 128, 196, 1) 0%, rgba(255, 109, 113, 1) 100%);
+            }
+            .nav-button {
+                transition: all 0.3s ease;
+            }
+            /* Hover effects removed for iOS, using active state instead */
+            .option-card {
+                transition: all 0.3s ease;
+            }
+            /* Hover effects removed for iOS, using active state instead */
+            .buy-button {
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+            }
+            /* Hover effects removed for iOS, using active state instead */
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .premium-badge {
+                position: relative;
+            }
+            .premium-badge::after {
+                content: 'POPULAR';
+                position: absolute;
+                top: -16px;
+                right: 12px;
+                background: linear-gradient(90deg, rgba(255, 128, 196, 1) 0%, rgba(255, 109, 113, 1) 100%);
+                color: white;
+                font-size: 10px;
+                font-weight: bold;
+                padding: 2px 8px;
+                border-radius: 10px;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body class="bg-black text-white font-sf-pro min-h-screen flex items-center justify-center">
+    <!-- iOS Device Container -->
+    <div class="ios-screen mx-auto bg-dark">
+        <!-- Status Bar - iOS Style -->
+        <div class="h-8 bg-dark z-50 flex items-center justify-between px-5">
+            <div class="text-xs text-white font-medium">9:41</div>
+            <div class="flex items-center space-x-2 text-white text-xs">
+                <i class="fa fa-signal"></i>
+                <i class="fa fa-wifi"></i>
+                <i class="fa fa-battery-full"></i>
+            </div>
+        </div>
+        
+        <!-- Top Bar -->
+        <nav class="h-14 bg-dark/90 backdrop-blur flex items-center px-4 z-10 border-b border-white/10">
+            <button id="back-button" class="nav-button w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                <i class="fa fa-arrow-left text-white"></i>
+            </button>
+            <h1 class="text-lg font-semibold text-white ml-4">Purchase Credits</h1>
+        </nav>
+        
+        <!-- Background Effect -->
+        <div class="absolute inset-0 gradient-background z-0"></div>
+        
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto scrollbar-hide p-5 h-[calc(100%-6.5rem)] relative z-10">
+        <!-- Balance Card -->
+        <div class="bg-darkSecondary rounded-2xl p-5 mb-10 border border-white/10">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-white98/80 text-sm">Current Balance</h3>
+                <span class="text-xs text-white98/60">Your credits</span>
+            </div>
+            <div class="flex items-end justify-between">
+                <span id="current-balance" class="text-3xl font-bold text-white">150</span>
+                <div id="balance-status" class="text-xs text-primary bg-primary/10 px-2 py-1 rounded-full">
+                    <i class="fa fa-info-circle mr-1"></i> Low Balance
+                </div>
+            </div>
+        </div>
+
+        <!-- Title and Subtitle -->
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold mb-2">Need more credits?</h1>
+            <p class="text-base text-gray-400">Pick an option to keep enjoying our app.</p>
+        </div>
+
+        <!-- Credit Options -->
+        <div class="space-y-4">
+            <!-- 2000 Credits (Selected) -->
+            <div class="option-card bg-darkSecondary rounded-xl border border-primary p-5 flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-6 h-6 rounded-full border border-primary mr-3 flex items-center justify-center">
+                        <div class="w-3.5 h-3.5 rounded-full bg-primary checkmark-gradient"></div>
+                    </div>
+                    <div>
+                        <span class="text-lg font-medium text-white">2000 Credits</span>
+                        <p class="text-xs text-gray-400 mt-0.5">For 80 projects</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="text-lg font-medium text-white">$19.99</span>
+                    <p class="text-xs text-gray-400 mt-0.5">$0.01 per credit</p>
+                </div>
+            </div>
+
+            <!-- 5000 Credits -->
+            <div class="option-card bg-darkSecondary/60 rounded-xl border border-white/20 p-5 flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-6 h-6 rounded-full border border-white/30 mr-3 flex items-center justify-center">
+                        <div class="w-3.5 h-3.5 rounded-full bg-primary/0"></div>
+                    </div>
+                    <div>
+                        <span class="text-lg font-medium text-white">5000 Credits</span>
+                        <p class="text-xs text-gray-400 mt-0.5">For 200 projects</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="text-lg font-medium text-white">$39.99</span>
+                    <p class="text-xs text-gray-400 mt-0.5">$0.008 per credit</p>
+                </div>
+            </div>
+
+            <!-- 10000 Credits -->
+            <div class="option-card bg-darkSecondary/60 rounded-xl border border-white/20 p-5 flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-6 h-6 rounded-full border border-white/30 mr-3 flex items-center justify-center">
+                        <div class="w-3.5 h-3.5 rounded-full bg-primary/0"></div>
+                    </div>
+                    <div>
+                        <span class="text-lg font-medium text-white">10000 Credits</span>
+                        <p class="text-xs text-gray-400 mt-0.5">For 400 projects</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="text-lg font-medium text-white">$59.99</span>
+                    <p class="text-xs text-gray-400 mt-0.5">$0.006 per credit</p>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Add Credits Button -->
+        <div class="mt-10">
+            <button id="add-credits-button" class="buy-button w-full h-14 rounded-xl button-gradient flex items-center justify-center text-base font-medium text-white shadow-lg">
+                <i class="fa fa-credit-card mr-2"></i> Add 2000 Credits
+            </button>
+        </div>
+
+        <!-- Terms and Privacy -->
+        <div class="mt-8 text-center">
+            <p class="text-xs text-white98/70">
+                <a href="#" class="hover:underline">Privacy Policy</a> | <a href="#" class="hover:underline">Terms of Use</a>
+            </p>
+        </div>
+        <div class="h-16"></div>
+    </main>
+    </div>
+
+    <!-- Toast Message Container -->
+    <div id="toast-container" class="fixed inset-0 pointer-events-none z-50 flex items-center justify-center"></div>
+
+    <script>
+        // 共享函数通过window对象挂载，不需要导入
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化共享功能
+            window.initializeSharedFunctions();
+            // Function to update the displayed balance on the page
+            function updateDisplayedBalance() {
+                try {
+                    let userData = localStorage.getItem('userData');
+                    let balance = 0;
+                    let statusText = 'Low Balance';
+                    let statusColor = 'primary';
+                    
+                    if (userData) {
+                        userData = JSON.parse(userData);
+                        balance = userData.totalCredits || userData.credits || 0;
+                        
+                        // Determine status based on balance
+                        if (balance >= 1000) {
+                            statusText = 'Good Balance';
+                            statusColor = 'green-500';
+                        } else if (balance >= 500) {
+                            statusText = 'Medium Balance';
+                            statusColor = 'yellow-500';
+                        }
+                    }
+                    
+                    // Update the display
+                    const balanceElement = document.getElementById('current-balance');
+                    const statusElement = document.getElementById('balance-status');
+                    
+                    if (balanceElement) {
+                        balanceElement.textContent = balance.toLocaleString();
+                    }
+                    
+                    if (statusElement) {
+                        statusElement.textContent = statusText;
+                        statusElement.innerHTML = `<i class="fa fa-info-circle mr-1"></i> ${statusText}`;
+                        
+                        // Update status color based on balance
+                        statusElement.className = `text-xs text-${statusColor} bg-${statusColor}/10 px-2 py-1 rounded-full`;
+                    }
+                } catch (error) {
+                    console.error('Error updating displayed balance:', error);
+                }
+            }
+            
+            // Update displayed balance on page load
+            updateDisplayedBalance();
+
+            
+            // Show welcome toast message
+            window.showToast('Choose your credit package', 'fa-info-circle', 2000);
+            // Back button functionality
+            const backButton = document.getElementById('back-button');
+            if (backButton) {
+                backButton.addEventListener('click', function() {
+                    window.buttonClickAnimation(backButton, function() {
+                        window.location.href = 'home.html';
+                    });
+                });
+            }
+
+            // Add Credits button functionality
+            const addCreditsButton = document.getElementById('add-credits-button');
+            if (addCreditsButton) {
+                addCreditsButton.addEventListener('click', function() {
+                    window.buttonClickAnimation(this);
+                    setTimeout(() => {
+                        showSuccessMessage();
+                    }, 150);
+                });
+            }
+
+            // Credit option selection functionality
+            const creditOptions = document.querySelectorAll('.option-card');
+            let selectedCredits = 2000;
+            let selectedPrice = '$19.99';
+            // 确保addCreditsButton在正确的作用域中
+            const addCreditsButtonRef = document.getElementById('add-credits-button');
+
+            creditOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    window.buttonClickAnimation(this);
+                    // Remove selected state from all options
+                    creditOptions.forEach(opt => {
+                        // 确保移除所有选项的选中状态
+                        opt.classList.remove('bg-darkSecondary', 'border-primary');
+                        opt.classList.add('bg-darkSecondary/60', 'border-white/20');
+                        // 确保找到正确的单选框元素
+                        const radioCircle = opt.querySelector('.w-6.h-6.rounded-full');
+                        if (radioCircle) {
+                            radioCircle.classList.remove('border-primary');
+                            radioCircle.classList.add('border-white/30');
+                        }
+                        const checkmark = opt.querySelector('[class*="w-3.5"][class*="h-3.5"][class*="rounded-full"]');
+                        if (checkmark) {
+                            checkmark.classList.remove('bg-primary', 'checkmark-gradient');
+                            checkmark.classList.add('bg-primary/0');
+                        }
+                    });
+
+                    // Add selected state to clicked option
+                    this.classList.remove('bg-darkSecondary/60', 'border-white/20');
+                    this.classList.add('bg-darkSecondary', 'border-primary');
+                    // 确保设置正确的单选框元素状态
+                    const radioCircle = this.querySelector('.w-6.h-6.rounded-full');
+                    if (radioCircle) {
+                        radioCircle.classList.remove('border-white/30');
+                        radioCircle.classList.add('border-primary');
+                    }
+                    const checkmark = this.querySelector('[class*="w-3.5"][class*="h-3.5"][class*="rounded-full"]');
+                    if (checkmark) {
+                        checkmark.classList.remove('bg-primary/0');
+                        checkmark.classList.add('bg-primary', 'checkmark-gradient');
+                    }
+
+                    // Update selected credits and price
+                    // 更通用的方式获取信用点数文本，适配所有选项结构
+                    let creditsText = '';
+                    const textElements = this.querySelectorAll('.text-lg.font-medium');
+                    for (let i = 0; i < textElements.length; i++) {
+                        const text = textElements[i].textContent || '';
+                        if (text.includes('Credits')) {
+                            creditsText = text;
+                            break;
+                        }
+                    }
+                    
+                    // 获取价格文本
+                    let priceText = '';
+                    const priceElements = this.querySelectorAll('.text-right .text-lg.font-medium');
+                    if (priceElements.length > 0) {
+                        priceText = priceElements[0].textContent || '';
+                    }
+                    
+                    if (creditsText && priceText) {
+                        try {
+                            // Extract only numbers from credits text
+                            const creditsMatch = creditsText.match(/\d+/);
+                            
+                            if (creditsMatch) {
+                                selectedCredits = parseInt(creditsMatch[0]);
+                                selectedPrice = priceText.trim();
+
+                                // Update Add Credits button text
+                                if (addCreditsButtonRef) {
+                                    addCreditsButtonRef.innerHTML = `<i class="fa fa-credit-card mr-2"></i> Add ${selectedCredits.toLocaleString()} Credits`;
+                                    window.showToast(`Selected ${selectedCredits.toLocaleString()} Credits`, 'fa-check-circle', 1500);
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error updating credits selection:', error);
+                        }
+                    }
+                });
+            });
+        
+            // Terms and Privacy links functionality
+            const links = document.querySelectorAll('a');
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.showToast('Opening ' + this.textContent, 'fa-external-link', 1500);
+                });
+            });
+
+            // Success message function
+            function showSuccessMessage() {
+                // Update user credits in localStorage
+                updateUserCredits();
+                
+                // Show success toast
+                window.showToast(`${selectedCredits.toLocaleString()} credits added successfully!`, 'fa-check-circle', 5000);
+                
+                // Use navigateTo function for cleaner navigation
+                window.navigateTo('home.html', 2000);
+            }
+            
+            // Update user credits in localStorage
+            function updateUserCredits() {
+                try {
+                    // Get current user data or initialize if not exists using our helper function
+                    let userData = window.getStorageItem('userData', {
+                        isPremiumMember: false,
+                        credits: 0,
+                        totalCredits: 0,
+                        rechargeCredits: 0,
+                        subscriptionCredits: 0,
+                        usedCredits: 0,
+                        transactionHistory: [],
+                        subscriptionEndDate: null
+                    });
+                    
+                    // Ensure transactionHistory exists as an array
+                    if (!userData.transactionHistory) {
+                        userData.transactionHistory = [];
+                    }
+                    
+                    // Initialize rechargeCredits if it doesn't exist
+                    if (userData.rechargeCredits === undefined) {
+                        userData.rechargeCredits = 0;
+                    }
+                    
+                    // Update recharge credits (purchased credits should go to rechargeCredits)
+                    userData.rechargeCredits += selectedCredits;
+                    
+                    // Update total credits
+                    userData.totalCredits = (userData.subscriptionCredits || 0) + userData.rechargeCredits;
+                    
+                    // Also update credits for backward compatibility
+                    userData.credits = userData.totalCredits;
+                    
+                    // Add transaction record
+                    userData.transactionHistory.push({
+                        type: 'purchase',
+                        description: 'Credit Purchase',
+                        amount: selectedCredits,
+                        price: selectedPrice,
+                        date: new Date().toISOString(),
+                        creditsChange: selectedCredits,
+                        subscriptionEndDate: userData.subscriptionEndDate
+                    });
+                    
+                    // Save updated data back to localStorage using our helper function
+                    window.setStorageItem('userData', userData);
+                    console.log('User credits updated successfully');
+                    
+                    // Update the displayed balance on the page
+                    updateDisplayedBalance();
+                } catch (error) {
+                    console.error('Error updating user credits:', error);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

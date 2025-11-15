@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trume - Camera</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="css/shared.css" rel="stylesheet">
+    <script src="js/shared.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#007AFF',
+                        dark: '#000000',
+                        darkSecondary: '#1C1C1E',
+                        white: '#FFFFFF',
+                        white50: '#FFFFFF80',
+                    },
+                    fontFamily: {
+                        'sf-pro': ['SF Pro', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            /* iOS Screen styles moved to shared.css */
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .shutter-button {
+                width: 70px;
+                height: 70px;
+                border-radius: 50%;
+                border: 4px solid white;
+                background: transparent;
+                position: relative;
+                transition: all 0.2s ease;
+            }
+            .shutter-button:active {
+                transform: scale(0.95);
+            }
+            .camera-button {
+                width: 44px;
+                height: 44px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+            }
+            .camera-button:active {
+                background: rgba(255, 255, 255, 0.2);
+                transform: scale(0.95);
+            }
+            .gallery-button {
+                width: 56px;
+                height: 56px;
+                border-radius: 12px;
+                border: 2px solid white;
+                overflow: hidden;
+                transition: all 0.2s ease;
+            }
+            .gallery-button:active {
+                transform: scale(0.95);
+            }
+            .camera-guide {
+                width: 280px;
+                height: 280px;
+                border: 2px solid rgba(255, 255, 255, 0.8);
+                border-radius: 12px;
+                position: relative;
+            }
+            .camera-guide::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 8px;
+                margin: 8px;
+                pointer-events: none;
+            }
+            .flash-active {
+                animation: flashAnimation 0.3s ease-out;
+            }
+            @keyframes flashAnimation {
+                0% { background-color: rgba(255, 255, 255, 0); }
+                50% { background-color: rgba(255, 255, 255, 0.8); }
+                100% { background-color: rgba(255, 255, 255, 0); }
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.3s ease-in-out;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            .animate-slide-up {
+                animation: slideUp 0.4s ease-out;
+            }
+            @keyframes slideUp {
+                from { transform: translateY(20px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            .backdrop-blur {
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+            }
+            .camera-overlay {
+                background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 20%, rgba(0,0,0,0) 80%, rgba(0,0,0,0.7) 100%);
+            }
+            .focus-ring {
+                animation: focusPulse 1s infinite;
+            }
+            @keyframes focusPulse {
+                0% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.03); opacity: 0.8; }
+                100% { transform: scale(1); opacity: 1; }
+            }
+        }
+    </style>
+</head>
+<body class="bg-black font-sf-pro min-h-screen flex items-center justify-center">
+    <!-- iOS Device Container -->
+    <div class="ios-screen">
+        <!-- Status Bar - iOS Style -->
+        <div class="h-8 bg-dark z-50 flex items-center justify-between px-5">
+            <div class="text-sm text-white font-semibold">9:41</div>
+            <div class="flex items-center space-x-2 text-white text-sm">
+                <i class="fa fa-signal"></i>
+                <i class="fa fa-wifi"></i>
+                <i class="fa fa-battery-full"></i>
+            </div>
+        </div>
+
+    <!-- Camera Preview Area -->
+    <div class="camera-preview flex flex-col bg-black overflow-hidden h-[calc(100%-64px)] relative">
+        <!-- Camera Overlay -->
+        <div class="absolute inset-0 camera-overlay pointer-events-none"></div>
+        
+        <!-- Camera Controls (Top) -->
+        <div class="h-20 pt-6 flex items-center justify-between px-6 z-10 animate-fade-in">
+            <button id="back-button" class="camera-button">
+                <i class="fa fa-chevron-left text-xl text-white"></i>
+            </button>
+            <button id="flash-button" class="camera-button">
+                <i class="fa fa-bolt text-lg text-white/50"></i>
+            </button>
+        </div>
+
+        <!-- Camera Frame -->
+        <div class="flex-grow flex items-center justify-center">
+            <div class="camera-guide animate-slide-up"></div>
+            
+            <!-- Capture Guidelines -->
+            <div class="absolute inset-x-0 top-1/3 flex justify-center">
+                <div class="text-xs text-white bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm animate-fade-in">
+                    Position your face inside the frame
+                </div>
+            </div>
+            
+            <!-- Face detection indicator (visual feedback) -->
+            <div id="face-detection-indicator" class="absolute bottom-48 right-8 bg-green-500/80 text-xs text-white px-2.5 py-1.5 rounded-full backdrop-blur-sm opacity-0 transition-opacity duration-300">
+                Face detected
+            </div>
+        </div>
+
+        <!-- Camera Controls (Bottom) -->
+        <div class="h-32 flex flex-col items-center justify-between pb-6 z-10 animate-slide-up">
+            <p class="text-xs text-white/80 mb-2">Center your face</p>
+            <div class="flex items-center justify-between w-full px-10">
+                <button id="gallery-button" class="gallery-button">
+                    <div class="w-full h-full bg-gray-800 flex items-center justify-center">
+                        <i class="fa fa-picture-o text-white text-xl"></i>
+                    </div>
+                </button>
+                <button id="capture-button" class="shutter-button">
+                </button>
+                <button id="switch-camera" class="camera-button">
+                    <i class="fa fa-refresh text-lg text-white"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Message Container -->
+    <div id="toast-container" class="fixed inset-0 pointer-events-none z-50 flex items-center justify-center"></div>
+
+    <script>
+        // 共享函数已通过window对象挂载，无需导入
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化共享功能
+            window.initializeSharedFunctions();
+            
+            // Add initial toast welcome message
+            window.showToast('Ready to capture', 'fa-info-circle', 3000);
+            
+            // Back button functionality
+            const backButton = document.getElementById('back-button');
+            if (backButton) {
+                backButton.addEventListener('click', function() {
+                    window.buttonClickAnimation(this);
+                    setTimeout(() => {
+                        window.location.href = 'home.html';
+                    }, 150);
+                });
+            }
+            
+            // Shutter button functionality
+            const shutterButton = document.querySelector('.shutter-button');
+            const cameraPreview = document.querySelector('.camera-preview');
+            const faceDetectionIndicator = document.getElementById('face-detection-indicator');
+            
+            if (shutterButton) {
+                shutterButton.addEventListener('click', function() {
+                    // Disable button during processing
+                    this.disabled = true;
+                    this.style.pointerEvents = 'none';
+                    
+                    // Add camera flash animation
+                    if (cameraPreview) {
+                        cameraPreview.classList.add('flash-active');
+                        setTimeout(() => {
+                            cameraPreview.classList.remove('flash-active');
+                        }, 500);
+                    }
+                    
+                    // Show capture feedback
+                    window.showToast('Capturing image...', 'fa-camera', 1200);
+                    
+                    // Simulate taking a photo and transitioning to the photo selection page
+                    setTimeout(() => {
+                        window.location.href = 'select-photo.html';
+                    }, 1200);
+                });
+            }
+            
+            // Flashlight toggle
+            const flashlightButton = document.getElementById('flash-button');
+            if (flashlightButton) {
+                flashlightButton.addEventListener('click', function() {
+                    window.buttonClickAnimation(this);
+                    
+                    let flashlightMode = 0; // 0: off, 1: on, 2: auto
+                    
+                    // Get current mode from icon
+                    const currentIcon = flashlightButton.querySelector('i');
+                    if (currentIcon.classList.contains('text-white/50')) {
+                        flashlightMode = 0;
+                    } else if (currentIcon.classList.contains('text-yellow-300')) {
+                        flashlightMode = 1;
+                    } else if (currentIcon.classList.contains('text-blue-300')) {
+                        flashlightMode = 2;
+                    }
+                    
+                    // Cycle to next mode
+                    flashlightMode = (flashlightMode + 1) % 3;
+                    
+                    if (flashlightMode === 0) {
+                        // Off mode
+                        flashlightButton.innerHTML = '<i class="fa fa-bolt text-white/50"></i>';
+                        window.showToast('Flash off');
+                    } else if (flashlightMode === 1) {
+                        // On mode
+                        flashlightButton.innerHTML = '<i class="fa fa-bolt text-yellow-300"></i>';
+                        window.showToast('Flash on');
+                    } else {
+                        // Auto mode
+                        flashlightButton.innerHTML = '<i class="fa fa-bolt text-blue-300"></i>';
+                        window.showToast('Flash auto');
+                    }
+                });
+            }
+            
+            // Camera switch button
+            const switchCameraButton = document.getElementById('switch-camera');
+            if (switchCameraButton) {
+                switchCameraButton.addEventListener('click', function() {
+                    window.buttonClickAnimation(this);
+                    
+                    let isFrontCamera = true;
+                    
+                    // Add rotation animation to the switch icon
+                    const icon = this.querySelector('i');
+                    if (icon) {
+                        icon.style.transition = 'transform 0.5s ease';
+                        icon.style.transform = 'rotate(180deg)';
+                        setTimeout(() => {
+                            icon.style.transform = 'rotate(0deg)';
+                        }, 500);
+                    }
+                    
+                    // Simulate camera switching animation
+                    if (cameraPreview) {
+                        cameraPreview.style.transition = 'opacity 0.3s ease';
+                        cameraPreview.style.opacity = '0.6';
+                    }
+                    
+                    isFrontCamera = !isFrontCamera;
+                    
+                    // Restore camera preview after switching
+                    setTimeout(() => {
+                        if (cameraPreview) {
+                            cameraPreview.style.opacity = '1';
+                        }
+                    }, 500);
+                    
+                    window.showToast(isFrontCamera ? 'Front camera' : 'Rear camera');
+                });
+            }
+            
+            // Gallery button
+            const galleryButton = document.getElementById('gallery-button');
+            if (galleryButton) {
+                galleryButton.addEventListener('click', function() {
+                    window.buttonClickAnimation(this);
+                    
+                    window.showToast('Opening gallery...', 'fa-picture-o', 800);
+                    
+                    // Use navigateTo function for cleaner navigation
+                    window.navigateTo('select-photo.html', 800);
+                });
+            }
+            
+            // Add visual feedback for camera frame alignment
+            function simulateFaceDetection() {
+                const frame = document.querySelector('.camera-frame');
+                if (!frame) return;
+                
+                // Randomly change border color to simulate face detection
+                setInterval(() => {
+                    const random = Math.random();
+                    if (random > 0.7) {
+                        // Face detected effect
+                        frame.style.borderColor = '#4ade80'; // Green color for detected
+                        frame.style.boxShadow = '0 0 15px rgba(74, 222, 128, 0.5)';
+                        
+                        // Show face detection indicator
+                        if (faceDetectionIndicator) {
+                            faceDetectionIndicator.style.opacity = '1';
+                            setTimeout(() => {
+                                faceDetectionIndicator.style.opacity = '0';
+                            }, 800);
+                        }
+                        
+                        // Add subtle pulse animation
+                        frame.style.animation = 'pulse 0.8s ease-in-out';
+                        setTimeout(() => {
+                            frame.style.animation = 'none';
+                        }, 800);
+                        
+                        setTimeout(() => {
+                            frame.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                            frame.style.boxShadow = 'none';
+                        }, 1000);
+                    }
+                }, 3000);
+            }
+            
+            // Pulse animation for face detection
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes pulse {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.02); }
+                    100% { transform: scale(1); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Start face detection simulation after a short delay
+            setTimeout(simulateFaceDetection, 1500);
+        });
+    </script>
+</body>
+</html>

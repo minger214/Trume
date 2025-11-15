@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trume - User Credits</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="css/shared.css" rel="stylesheet">
+    <script src="js/shared.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#090A0A',
+                        darkSecondary: '#191919',
+                        white: '#FFFFFF',
+                        white98: '#FAFAFA',
+                        white50: '#808080',
+                        primary: '#8247E5',
+                        secondary: '#D434FE',
+                        accent: '#FF2E93',
+                        grayDark: '#28282B',
+                    },
+                    fontFamily: {
+                        'sf-pro': ['SF Pro', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            /* iOS Screen styles moved to shared.css */
+            .text-shadow {
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            }
+            .gradient-overlay {
+                background: linear-gradient(180deg, rgba(10, 10, 10, 0) 0%, rgba(10, 10, 10, 0.8) 50%, rgba(10, 10, 10, 0.8) 100%);
+            }
+            .card-shadow {
+                box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+            }
+            .button-gradient {
+                background: linear-gradient(92deg, rgba(180, 185, 136, 1) 0%, rgba(43, 115, 108, 1) 45%, rgba(16, 61, 53, 1) 100%);
+            }
+            .feature-card-active {
+                background: linear-gradient(135deg, rgba(130, 71, 229, 0.1) 0%, rgba(212, 52, 254, 0.1) 100%);
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.5s ease-in-out;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            .animate-slide-up {
+                animation: slideUp 0.5s ease-out;
+            }
+            @keyframes slideUp {
+                from { transform: translateY(20px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            .nav-button {
+                transition: all 0.3s ease;
+            }
+            /* Hover effects removed for iOS, using active state instead */
+            .nav-button:active {
+                transform: scale(0.95);
+            }
+            .toast-message {
+                background-color: rgba(25, 25, 25, 0.9);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border-radius: 9999px;
+                padding: 0.75rem 1.25rem;
+                color: white;
+                position: fixed;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 9999;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                animation: slideUp 0.3s ease-out;
+            }
+            .credit-card-gradient {
+                background: linear-gradient(135deg, #8247E5 0%, #D434FE 100%);
+            }
+            .purchase-button {
+                transition: all 0.3s ease;
+            }
+            .purchase-button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 12px rgba(130, 71, 229, 0.3);
+            }
+            .purchase-button:active {
+                transform: scale(0.98);
+            }
+            .fade-in-delay-1 {
+                animation: fadeIn 0.5s ease-in-out 0.1s both;
+            }
+            .fade-in-delay-2 {
+                animation: fadeIn 0.5s ease-in-out 0.2s both;
+            }
+            .fade-in-delay-3 {
+                animation: fadeIn 0.5s ease-in-out 0.3s both;
+            }
+        }
+    </style>
+</head>
+<body class="bg-dark font-sf-pro min-h-screen flex items-center justify-center">
+    <!-- iOS Device Container -->
+    <div class="ios-screen mx-auto bg-dark">
+        <!-- Status Bar - iOS Style -->
+        <div class="h-8 bg-dark z-50 flex items-center justify-between px-5">
+            <div class="text-xs text-white font-medium">9:41</div>
+            <div class="flex items-center space-x-2 text-white text-xs">
+                <i class="fa fa-signal"></i>
+                <i class="fa fa-wifi"></i>
+                <i class="fa fa-battery-full"></i>
+            </div>
+        </div>
+        
+        <!-- Top Bar -->
+        <nav class="h-14 bg-dark/90 backdrop-blur flex items-center px-4 z-10 border-b border-white/10">
+            <button id="back-button" class="nav-button w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                <i class="fa fa-arrow-left text-white"></i>
+            </button>
+            <h1 class="text-lg font-semibold text-white ml-4">Plans & Credits</h1>
+        </nav>
+        
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto h-[calc(100%-6.5rem)] scrollbar-hide pb-6">
+            <!-- Credit Card Display -->
+            <div class="mt-8 px-4">
+                <div id="credit-card" class="rounded-2xl overflow-hidden shadow-xl credit-card-gradient animate-fade-in">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-white text-sm">Trume Credits</span>
+                            <div class="text-white text-xs opacity-80">
+                                <i class="fa fa-credit-card"></i>
+                            </div>
+                        </div>
+                        <div id="user-credits" class="text-white text-4xl font-bold mb-2">0</div>
+                        <div class="text-white/80 text-sm mb-6">Valid until: May 31, 2025</div>
+                        <!-- Add Purchase Button -->
+                        <button id="buy-credits-button" class="w-full bg-white/10 hover:bg-white/15 transition-colors text-white py-3 rounded-xl font-semibold mb-6 purchase-button">
+                            <i class="fa fa-plus-circle mr-2"></i> Add More Credits
+                        </button>
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <div class="text-white/80 text-xs mb-1">USER ACCOUNT</div>
+                                <div class="text-white text-sm">kevin@example.com</div>
+                            </div>
+                            <div class="w-12 h-12 bg-white/10 backdrop-blur rounded-full flex items-center justify-center">
+                                <i class="fa fa-user-circle-o text-white text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+
+            
+            <!-- Recent Transactions -->
+            <div class="px-4 mt-5">
+                <h2 class="text-white font-bold text-lg mb-3">Recent Transactions</h2>
+                <div id="transactions-container" class="space-y-3"> 
+                    <!-- Transactions will be dynamically added here -->
+                    <div id="no-transactions" class="text-white50 text-center py-8">
+                        No transaction history yet
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Toast Container -->
+        <div id="toast-container" class="fixed bottom-20 left-0 right-0 flex flex-col items-center z-50"></div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const backButton = document.getElementById('back-button');
+            const toastContainer = document.getElementById('toast-container');
+            const purchaseButtons = document.querySelectorAll('.purchase-button');
+            const userCreditsElement = document.getElementById('user-credits');
+            const creditUsageProgressElement = document.getElementById('credit-usage-progress');
+            const transactionsContainer = document.getElementById('transactions-container');
+            const noTransactionsElement = document.getElementById('no-transactions');
+            
+            // Initialize user data if not exists
+            initializeUserData();
+            
+            // Check subscription status
+            checkSubscriptionStatus();
+            
+            // Load and display user credits
+            loadAndDisplayUserCredits();
+            
+            // Load and display transaction history
+            loadAndDisplayTransactions();
+            
+            // Back button functionality
+            if (backButton) {
+                backButton.addEventListener('click', function() {
+                    window.buttonClickAnimation(backButton, function() {
+                        window.location.href = 'home.html';
+                    });
+                });
+            }
+            
+            // Purchase button functionality
+            const buyCreditsButton = document.getElementById('buy-credits-button');
+            if (buyCreditsButton) {
+                buyCreditsButton.addEventListener('click', function() {
+                    window.buttonClickAnimation(buyCreditsButton, function() {
+                        // Navigate to credit-purchase.html
+                        window.location.href = 'credit-purchase.html';
+                    });
+                });
+            }
+            
+            // Handle any remaining purchase buttons
+            purchaseButtons.forEach(button => {
+                if (button.id !== 'buy-credits-button') {
+                    button.addEventListener('click', function() {
+                        window.buttonClickAnimation(button, function() {
+                            window.showToast(`Purchase completed!`);
+                        });
+                    });
+                }
+            });
+            
+            // Initialize user data
+            function initializeUserData() {
+                let userData = localStorage.getItem('userData');
+                if (!userData) {
+                    userData = {
+                        credits: 1250,
+                        subscriptionCredits: 500,
+                        rechargeCredits: 750,
+                        totalCredits: 1250,
+                        isPremiumMember: true,
+                        subscriptionEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                        transactionHistory: [
+                            {
+                                type: 'subscription',
+                                description: 'Basic plan subscription',
+                                creditsChange: 500,
+                                price: 4.99,
+                                timestamp: new Date('2023-05-05T10:45:00').toISOString(),
+                                subscriptionEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+                            },
+                            {
+                                type: 'purchase',
+                                description: 'Credit Purchase',
+                                creditsChange: 750,
+                                price: 7.99,
+                                timestamp: new Date('2023-04-20T14:30:00').toISOString()
+                            },
+                            {
+                                type: 'usage',
+                                description: 'Project Generation',
+                                creditsChange: -150,
+                                price: 0,
+                                timestamp: new Date('2023-05-10T16:20:00').toISOString()
+                            }
+                        ]
+                    };
+                    localStorage.setItem('userData', JSON.stringify(userData));
+                }
+            }
+            
+            // Check subscription status and update UI
+            function checkSubscriptionStatus() {
+                let userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                
+                if (userData.isPremiumMember && userData.subscriptionEndDate) {
+                    const now = new Date();
+                    const endDate = new Date(userData.subscriptionEndDate);
+                    const daysRemaining = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+                    
+                    // Format end date for display
+                    const formattedEndDate = formatDate(endDate);
+                    
+                    // Show subscription status
+                    const subscriptionStatus = document.createElement('div');
+                    subscriptionStatus.className = 'bg-darkSecondary rounded-xl p-4 mt-5 fade-in-delay-1';
+                    subscriptionStatus.innerHTML = `
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-white font-semibold">Subscription Status</span>
+                            <span class="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">Active</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-white50">End Date</span>
+                                <span class="text-white">${formattedEndDate}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-white50">Days Remaining</span>
+                                <span class="text-white">${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Insert after credit card
+                    const creditCard = document.getElementById('credit-card');
+                    if (creditCard && !document.querySelector('.bg-darkSecondary.rounded-xl.p-4.mt-5.fade-in-delay-1')) {
+                        creditCard.parentNode.insertBefore(subscriptionStatus, creditCard.nextSibling);
+                    }
+                }
+            }
+            
+            // Format date for display
+            function formatDate(date) {
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const month = monthNames[date.getMonth()];
+                const day = date.getDate();
+                const year = date.getFullYear();
+                return `${month} ${day}, ${year}`;
+            }
+            
+            // Load and display user credits
+            function loadAndDisplayUserCredits() {
+                try {
+                    // 使用辅助函数获取用户数据，并设置默认值以避免空引用
+                    let userData = window.getStorageItem('userData', {
+                        totalCredits: 0,
+                        subscriptionCredits: 0,
+                        rechargeCredits: 0,
+                        isPremiumMember: false,
+                        subscriptionEndDate: null
+                    });
+                    
+                    // Format credits with commas, adding null check
+                    userCreditsElement.textContent = (userData.totalCredits || 0).toLocaleString();
+                
+                // Update valid until date
+                const validUntilElement = document.querySelector('#credit-card .text-sm.mb-6');
+                if (validUntilElement) {
+                    if (userData.isPremiumMember && userData.subscriptionEndDate) {
+                        const endDate = new Date(userData.subscriptionEndDate);
+                        validUntilElement.textContent = `Subscription valid until: ${formatDate(endDate)}`;
+                    } else {
+                        validUntilElement.textContent = 'Valid indefinitely';
+                    }
+                }
+                
+                // Display subscription and recharge credits
+                const creditsOverview = document.createElement('div');
+                creditsOverview.className = 'bg-darkSecondary rounded-xl p-4 mt-5 fade-in-delay-1';
+                creditsOverview.innerHTML = `
+                    <div class="text-white font-semibold mb-3">Credit Breakdown</div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="w-2 h-2 bg-primary rounded-full mr-2"></div>
+                                <span class="text-white50 text-sm">Subscription Credits</span>
+                            </div>
+                            <span class="text-white font-medium">${(userData.subscriptionCredits || 0).toLocaleString()}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="w-2 h-2 bg-secondary rounded-full mr-2"></div>
+                                <span class="text-white50 text-sm">Recharge Credits</span>
+                            </div>
+                            <span class="text-white font-medium">${(userData.rechargeCredits || 0).toLocaleString()}</span>
+                        </div>
+                        <div class="h-px bg-grayDark"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-white font-semibold">Total Credits</span>
+                            <span class="text-white font-bold">${(userData.totalCredits || 0).toLocaleString()}</span>
+                        </div>
+                    </div>
+                `;
+                
+                // Insert after credit card
+                    const creditCard = document.getElementById('credit-card');
+                    if (creditCard) {
+                        // Check if credits overview already exists
+                        const existingOverview = document.querySelector('.bg-darkSecondary.rounded-xl.p-4.mt-5.fade-in-delay-1');
+                        if (existingOverview && existingOverview.querySelector('.text-white.font-semibold.mb-3')?.textContent === 'Credit Breakdown') {
+                            existingOverview.remove();
+                        }
+                        
+                        creditCard.parentNode.insertBefore(creditsOverview, creditCard.nextSibling);
+                    }
+                } catch (error) {
+                    console.error('Error loading user credits:', error);
+                    userCreditsElement.textContent = '0';
+                }
+            }
+            
+            // Load and display transaction history
+            function loadAndDisplayTransactions() {
+                try {
+                    // 使用辅助函数获取用户数据，确保transactionHistory默认为空数组
+                    let userData = window.getStorageItem('userData', {
+                        transactionHistory: []
+                    });
+                    const transactions = userData.transactionHistory || [];
+                
+                // Clear existing transactions
+                transactionsContainer.innerHTML = '';
+                
+                if (transactions && transactions.length > 0) {
+                    // Sort transactions by timestamp (newest first)
+                    transactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    
+                    // Add transactions to container
+                    transactions.forEach((transaction, index) => {
+                        const transactionElement = createTransactionElement(transaction, index);
+                        transactionsContainer.appendChild(transactionElement);
+                    });
+                } else {
+                    // Show no transactions message
+                    transactionsContainer.appendChild(noTransactionsElement);
+                }
+                } catch (error) {
+                    console.error('Error loading transactions:', error);
+                    transactionsContainer.innerHTML = '<p class="text-white50 text-center py-8">Failed to load transaction history</p>';
+                }
+            }
+            
+            // Create transaction element
+                function createTransactionElement(transaction, index) {
+                    const element = document.createElement('div');
+                    const isPositive = transaction.creditsChange > 0;
+                    const isPurchase = transaction.type === 'purchase';
+                    const isSubscription = transaction.type === 'subscription';
+                    
+                    // 安全地解析时间戳，同时支持timestamp和date字段
+                    let date;
+                    try {
+                        // 检查是否有timestamp或date字段
+                        const timestampValue = transaction.timestamp || transaction.date;
+                        
+                        if (!timestampValue) {
+                            date = new Date(); // 如果没有时间戳，使用当前日期
+                        } else {
+                            // 尝试多种时间戳格式解析
+                            date = new Date(timestampValue);
+                            // 如果解析失败，尝试将其作为数字解析
+                            if (isNaN(date.getTime())) {
+                                // 尝试将字符串转换为数字（如果是Unix时间戳）
+                                const numTimestamp = Number(timestampValue);
+                                if (!isNaN(numTimestamp)) {
+                                    date = new Date(numTimestamp);
+                                } else {
+                                    date = new Date(); // 最后使用当前日期
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        date = new Date(); // 如果解析失败，使用当前日期
+                    }
+                    
+                    const formattedDate = formatTransactionDate(date);
+                    
+                    // Determine icon and color based on transaction type
+                    let iconClass = 'fa-camera';
+                    let bgClass = 'bg-primary/10';
+                    let textClass = 'text-primary';
+                    
+                    if (isPurchase) {
+                        iconClass = 'fa-credit-card';
+                        bgClass = 'bg-secondary/10';
+                        textClass = 'text-secondary';
+                    } else if (isSubscription) {
+                        iconClass = 'fa-star';
+                        bgClass = 'bg-accent/10';
+                        textClass = 'text-accent';
+                    }
+                    
+                    element.className = `bg-darkSecondary rounded-xl p-4 flex items-center fade-in-delay-${index % 3 + 1}`;
+                    
+                    // Create innerHTML with proper handling of credits display
+                    let creditsDisplay = '';
+                    if (transaction.creditsChange !== 0) {
+                        creditsDisplay = `<div class="font-bold ${isPositive ? 'text-green-500' : 'text-accent'}">${isPositive ? '+' : ''}${transaction.creditsChange.toLocaleString()}</div>`;
+                    } else {
+                        creditsDisplay = '<div class="font-bold text-white">Subscription</div>';
+                    }
+                    
+                    element.innerHTML = `
+                        <div class="w-10 h-10 ${bgClass} rounded-full flex items-center justify-center mr-3">
+                            <i class="fa ${iconClass} ${textClass}"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-white font-semibold">${transaction.description}</div>
+                            <div class="text-gray-300 text-xs">${formattedDate}</div>
+                        </div>
+                        ${creditsDisplay}
+                    `;
+                    
+                    return element;
+                }
+            
+            // Format transaction date
+            function formatTransactionDate(date) {
+                // 检查日期是否有效
+                if (!(date instanceof Date) || isNaN(date.getTime())) {
+                    return 'Invalid Date';
+                }
+                
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const month = monthNames[date.getMonth()];
+                const day = date.getDate();
+                const year = date.getFullYear();
+                
+                // Format time (12-hour format with AM/PM)
+                let hours = date.getHours();
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12; // Handle 0 as 12
+                
+                return `${month} ${day}, ${year} • ${hours}:${minutes} ${ampm}`;
+            }
+            
+            // Using buttonClickAnimation from shared.js
+            
+            // showToast function is imported from shared.js
+        });
+    </script>
+</body>
+</html>

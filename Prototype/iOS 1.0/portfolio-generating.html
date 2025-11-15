@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Portfolio Generating | Trume</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="css/shared.css" rel="stylesheet">
+    <script src="js/shared.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#007AFF',
+                        secondary: '#5856D6',
+                        success: '#34C759',
+                        warning: '#FF9500',
+                        danger: '#FF3B30',
+                        light: '#F2F2F7',
+                        dark: '#1C1C1E',
+                        'ios-dark': '#1C1C1E',
+                        'ios-light': '#F2F2F7',
+                        'ios-card': '#FFFFFF',
+                        'ios-text-primary': '#000000',
+                        'ios-text-secondary': '#8E8E93',
+                        'ios-text-tertiary': '#C7C7CC',
+                        'ios-border': '#C6C6C8'
+                    },
+                    fontFamily: {
+                        'sf-pro': ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            /* iOS Screen styles moved to shared.css */
+            .ios-status-bar {
+                height: 14px;
+                padding: 6px 0;
+                background-color: transparent;
+            }
+            .ios-nav-bar {
+                padding: 10px 16px;
+                background-color: transparent;
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+            }
+            .animated-bg {
+                background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+                background-size: 400% 400%;
+                animation: gradient 15s ease infinite;
+            }
+            @keyframes gradient {
+                0% {
+                    background-position: 0% 50%;
+                }
+                50% {
+                    background-position: 100% 50%;
+                }
+                100% {
+                    background-position: 0% 50%;
+                }
+            }
+            .card-overlay {
+                background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 50%);
+            }
+            .ios-button-primary {
+                background-color: #007AFF;
+                color: white;
+                transition: all 0.2s;
+            }
+            .ios-button-primary:active {
+                background-color: #0051D5;
+                transform: scale(0.98);
+            }
+        }
+    </style>
+</head>
+<body class="bg-black text-white font-sf-pro min-h-screen flex items-center justify-center">
+    <div class="ios-screen">
+    <!-- Status Bar - iOS Style -->
+    <div class="h-8 bg-dark z-50 flex items-center justify-between px-5">
+        <div class="text-xs text-white font-medium">9:41</div>
+        <div class="flex items-center space-x-2 text-white text-xs">
+            <i class="fa fa-signal"></i>
+            <i class="fa fa-wifi" aria-hidden="true"></i>
+            <i class="fa fa-battery-full" aria-hidden="true"></i>
+        </div>
+    </div>
+
+    <!-- Navigation Bar - iOS Style -->
+    <nav class="flex items-center justify-between px-5 py-4 bg-dark/90 backdrop-blur z-20">
+        <div class="flex items-center">
+            <button id="back-button" class="p-2 rounded-full nav-button">
+                <i class="fa fa-arrow-left text-white text-xl" aria-hidden="true"></i>
+            </button>
+            <div class="ml-4 flex items-center">
+                <div class="flex items-center">
+                    <span class="text-light text-lg font-semibold">Generated Projects</span>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button id="sort-button" class="p-2 rounded-full nav-button">
+                <i class="fa fa-sort text-white text-xl" aria-hidden="true"></i>
+            </button>
+            <button id="help-button" class="p-2 rounded-full nav-button">
+                <i class="fa fa-home text-white text-xl" aria-hidden="true"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-5 pb-8">
+        <!-- Projects Grid -->
+        <div id="projects-container" class="grid grid-cols-3 gap-4">
+            <!-- Projects will be dynamically added here -->
+        </div>
+        
+        <!-- Save Button -->
+        <div class="mt-6">
+            <button id="save-button" class="ios-button-primary w-full py-3 rounded-lg font-medium">
+                Save Projects
+            </button>
+        </div>
+    </main>
+        
+        <!-- Toast Container -->
+        <div id="toast-container" class="fixed bottom-20 left-0 right-0 flex justify-center items-center pointer-events-none z-50"></div>
+        
+        <script>
+            // 共享函数已通过window对象挂载，无需导入
+            
+            document.addEventListener('DOMContentLoaded', function() {
+                // 初始化共享功能
+                window.initializeSharedFunctions();
+                // Project styles
+                const projectStyles = [
+                    {
+                        name: 'Minimalist',
+                        filter: 'contrast(1.1) saturate(0.9)' 
+                    },
+                    {
+                        name: 'Vintage',
+                        filter: 'sepia(0.3) contrast(0.95)' 
+                    },
+                    {
+                        name: 'Vibrant',
+                        filter: 'contrast(1.2) saturate(1.3)' 
+                    },
+                    {
+                        name: 'Warm',
+                        filter: 'sepia(0.2) brightness(1.05)' 
+                    },
+                    {
+                        name: 'Cool',
+                        filter: 'saturate(0.9) hue-rotate(10deg)' 
+                    },
+                    {
+                        name: 'Dreamy',
+                        filter: 'contrast(0.9) saturate(1.1) brightness(1.05) blur(0.5px)'
+                    }
+                ];
+                
+                // Generate random ID
+                function generateId() {
+                    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                }
+                
+                // Generate new projects
+                function generateNewProjects(photos) {
+                    const newProjects = [];
+                    
+                    // Check if photos array is empty
+                    if (!photos || photos.length === 0) {
+                        // Generate random projects
+                        for (let i = 0; i < 6; i++) {
+                            newProjects.push({
+                                id: generateId(),
+                                imageUrl: `https://picsum.photos/400/500?random=${Math.floor(Math.random() * 1000)}`,
+                                style: projectStyles[i % projectStyles.length],
+                                status: 'processing',
+                                createdAt: new Date().toISOString()
+                            });
+                        }
+                    } else {
+                        // 使用选择的图片创建项目
+                        for (let i = 0; i < 6; i++) {
+                            // 随机选择一张用户上传的图片
+                                const randomPhoto = photos[Math.floor(Math.random() * photos.length)];
+                                newProjects.push({
+                                    id: generateId(),
+                                    imageUrl: randomPhoto.src || randomPhoto.dataUrl || `https://picsum.photos/400/500?random=${Math.floor(Math.random() * 1000)}`,
+                                    style: projectStyles[i % projectStyles.length],
+                                    status: 'processing',
+                                    createdAt: new Date().toISOString()
+                                });
+                        }
+                    }
+                    
+                    return newProjects;
+                }
+                
+                // 初始化项目
+            function initializeProjects() {
+                // 检查是否有需要生成新项目的标志
+                const generateNewProjectsFlag = localStorage.getItem('generateNewProjects') === 'true';
+                
+                // 检查当前生成的项目
+                const currentSessionProjects = getCurrentSessionProjects();
+                
+                // 如果当前没有项目数据，生成一些示例项目用于测试
+                if (currentSessionProjects.length === 0) {
+                    // 生成示例照片数据
+                    const samplePhotos = [
+                        { src: 'https://picsum.photos/400/500?random=101' },
+                        { src: 'https://picsum.photos/400/500?random=102' },
+                        { src: 'https://picsum.photos/400/500?random=103' }
+                    ];
+                    
+                    // 生成6个示例项目
+                    const sampleProjects = generateNewProjects(samplePhotos);
+                    
+                    // 保存当前会话的项目
+                    saveCurrentSessionProjects(sampleProjects);
+                    
+                    // 显示提示
+                    window.showToast('Sample projects loaded for preview!', 'fa-info-circle', 3000);
+                } else if (generateNewProjectsFlag) {
+                    // 获取选中的照片（从localStorage读取）
+                    const selectedPhotosJson = localStorage.getItem('selectedPhotos');
+                    const selectedPhotos = selectedPhotosJson ? JSON.parse(selectedPhotosJson) : [];
+                    // 如果没有选中的照片，使用示例照片
+                    const photosToUse = selectedPhotos.length > 0 ? selectedPhotos : [
+                        { src: 'https://picsum.photos/400/500?random=101' },
+                        { src: 'https://picsum.photos/400/500?random=102' },
+                        { src: 'https://picsum.photos/400/500?random=103' }
+                    ];
+                    // 生成新项目
+                    const newProjects = generateNewProjects(photosToUse);
+                    // 保存当前会话的项目（不与历史项目合并）
+                    saveCurrentSessionProjects(newProjects);
+                    // 重置标志
+                    localStorage.setItem('generateNewProjects', 'false');
+                    // 显示提示
+                    window.showToast('6 new projects have been generated', 'fa-check-circle', 3000);
+                }
+                
+                // 渲染所有项目
+                renderProjects();
+                // 启动自动更新进度
+                autoUpdateProgress();
+            }
+            
+            // 已经在上方初始化过共享函数
+                
+                // 渲染项目
+                function renderProjects() {
+                    const projectsContainer = document.getElementById('projects-container');
+                    const projects = getCurrentSessionProjects();
+                    
+                    if (projects.length === 0) {
+                        // 显示空状态
+                    projectsContainer.innerHTML = `
+                            <div class="col-span-3 text-center py-10">
+                                <p class="text-ios-text-secondary">No projects available yet</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // 清空容器
+                    projectsContainer.innerHTML = '';
+                    
+                    // 渲染每个项目
+                    projects.forEach((project, index) => {
+                        const isSecondRow = index >= 3 && index < 6;
+                        
+                        // 创建项目卡片
+                        const card = document.createElement('div');
+                        card.className = `relative project-card cursor-pointer transition-all duration-300 ${isSecondRow ? 'mt-8' : ''}`;
+                        card.dataset.id = project.id;
+                        
+                        // 项目卡片内容
+                        card.innerHTML = `
+                            <div class="rounded-xl overflow-hidden aspect-[3/4]">
+                                <img 
+                                    src="${project.imageUrl}" 
+                                    alt="${project.style.name} style project" 
+                                    class="w-full h-full object-cover transition-all duration-500"
+                                    style="filter: ${project.status === 'completed' ? project.style.filter : 'grayscale(50%) brightness(70%)'}"
+                                >
+                                <div class="absolute inset-0 card-overlay flex flex-col justify-end p-2">
+                                    <p class="text-[10px] text-white text-center text-shadow">
+                                        ${project.status === 'completed' ? project.style.name : 'Estimated 1 minute'}
+                                    </p>
+                                </div>
+                            </div>
+                            <!-- Completion Time Display -->
+                            <div class="absolute -bottom-5 left-0 right-0 px-3">
+                                <p class="completion-time text-[10px] text-center mt-1 
+                                    ${project.status === 'completed' ? 'text-success' : 'text-white'}">
+                                    ${project.status === 'completed' ? 'Completed' : 'Processing...'}
+                                </p>
+                            </div>
+                        `;
+                        
+                        // 添加删除按钮（仅对已完成的项目）
+                        if (project.status === 'completed') {
+                            const deleteButton = document.createElement('div');
+                            deleteButton.className = 'absolute top-1 right-1 w-5 h-5 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200';
+                            deleteButton.innerHTML = '<span class="text-white text-xs">✕</span>';
+                            deleteButton.addEventListener('click', function(e) {
+                                e.stopPropagation(); // 阻止冒泡
+                                // 添加点击动画
+                                this.style.transform = 'scale(0)';
+                                this.style.opacity = '0';
+                                setTimeout(() => {
+                                    deleteProject(project.id);
+                                }, 200);
+                            });
+                            
+                            // 确保卡片支持悬停效果
+                            card.classList.add('group');
+                            card.appendChild(deleteButton);
+                        }
+                        
+                        // 添加点击事件
+                        card.addEventListener('click', function() {
+                            if (project.status === 'completed') {
+                                // 保存当前选择的项目ID和样式
+                                window.setStorageItem('selectedProjectId', project.id);
+                                window.setStorageItem('selectedProject', project);
+                                // 跳转到项目详情页面
+                                window.navigateTo('portfolio-selected.html', 150);
+                            } else {
+                                window.showToast('Project is still processing. Please wait.', 'fa-exclamation-circle', 2000);
+                            }
+                        });
+                        
+                        // 添加到容器
+                        projectsContainer.appendChild(card);
+                    });
+                }
+                
+                // 删除项目
+                function deleteProject(projectId) {
+                    const projects = getCurrentSessionProjects();
+                    const updatedProjects = projects.filter(project => project.id !== projectId);
+                    saveCurrentSessionProjects(updatedProjects);
+                    renderProjects();
+                    window.showToast('Project removed', 'fa-check-circle', 2000);
+                }
+                
+                // 进度条动画逻辑
+                function autoUpdateProgress() {
+                    const projects = getCurrentSessionProjects();
+                    
+                    // 为每个处理中的项目更新进度
+                    projects.forEach((project, index) => {
+                        if (project.status === 'processing') {
+                            // 模拟处理完成
+                            setTimeout(() => {
+                                completeProject(project.id, index);
+                            }, 3000 + index * 1000); // 每个项目延迟3-9秒完成
+                        }
+                    });
+                }
+                
+                // 完成项目处理
+                function completeProject(projectId, index) {
+                    const projects = getCurrentSessionProjects();
+                    const projectIndex = projects.findIndex(p => p.id === projectId);
+                    
+                    if (projectIndex !== -1) {
+                        // 更新项目状态
+                        projects[projectIndex].status = 'completed';
+                        saveCurrentSessionProjects(projects);
+                        
+                        // 更新UI
+                        renderProjects();
+                    }
+                }
+                
+                // 播放完成动画
+                function playCompletionAnimation(card) {
+                    // 添加缩放效果
+                    card.classList.add('scale-105', 'transition-transform', 'duration-300');
+                    
+                    // 100毫秒后恢复原始大小
+                    setTimeout(() => {
+                        card.classList.remove('scale-105');
+                    }, 300);
+                }
+                
+                // 点击返回按钮
+                // 返回按钮功能
+                const backButton = document.getElementById('back-button');
+                if (backButton) {
+                    backButton.addEventListener('click', function() {
+                        window.buttonClickAnimation(this);
+                        setTimeout(() => {
+                            window.navigateTo('portfolio.html');
+                        }, 150);
+                    });
+                }
+                
+                // 排序按钮功能
+                const sortButton = document.getElementById('sort-button');
+                if (sortButton) {
+                    sortButton.addEventListener('click', function() {
+                        window.buttonClickAnimation(this);
+                        window.showToast('Sorting projects by progress...', 'fa-sort', 2000);
+                        // 这里可以添加排序功能的实现
+                        // 例如按照处理进度或完成时间排序
+                    });
+                }
+                
+                // 保存按钮功能
+                const saveButton = document.getElementById('save-button');
+                if (saveButton) {
+                    saveButton.addEventListener('click', function() {
+                        window.buttonClickAnimation(this);
+                        
+                        // 检查是否有未完成的项目
+                        const currentProjects = window.getCurrentSessionProjects();
+                        const hasProcessingProjects = currentProjects.some(project => project.status === 'processing');
+                        
+                        if (hasProcessingProjects) {
+                            window.showToast('Please wait for all projects to finish processing before saving.', 'fa-exclamation-circle', 2000);
+                            return;
+                        }
+                        
+                        // 获取当前会话项目
+                        const projectsToSave = window.getCurrentSessionProjects();
+                        
+                        // 获取已保存的历史项目
+                        const savedProjects = window.getProjects();
+                        
+                        // 将当前项目添加到历史项目中
+                        const allProjects = [...projectsToSave, ...savedProjects];
+                        window.saveProjects(allProjects);
+                        
+                        // 显示保存成功提示
+                        window.showToast('Projects saved successfully', 'fa-check-circle', 3000);
+                        
+                        // 跳转到portfolio.html页面
+                        window.navigateTo('portfolio.html', 1000);
+                    });
+                }
+                
+                // 首页按钮功能
+                const helpButton = document.getElementById('help-button');
+                if (helpButton) {
+                    helpButton.addEventListener('click', function() {
+                        window.buttonClickAnimation(this);
+                        setTimeout(() => {
+                            window.navigateTo('home.html');
+                        }, 150);
+                    });
+                }
+                
+                // 初始化项目
+                initializeProjects();
+            });
+        </script>
+    </div>
+</body>
+</html>

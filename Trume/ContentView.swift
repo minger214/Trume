@@ -8,14 +8,27 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var viewModel = AppViewModel()
+    @State private var showSplash = true
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        ZStack {
+            if showSplash {
+                SplashView(showSplash: $showSplash)
+            } else {
+                NavigationView {
+                    HomeView(viewModel: viewModel)
+                        #if os(iOS)
+                        .navigationBarHidden(true)
+                        #endif
+                }
+                #if os(iOS)
+                .navigationViewStyle(StackNavigationViewStyle())
+                #endif
+            }
         }
-        .padding()
+        .toast(viewModel: viewModel)
+        .environmentObject(viewModel)
     }
 }
 

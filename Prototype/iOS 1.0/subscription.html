@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trume - Subscription</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="css/shared.css" rel="stylesheet">
+    <script src="js/shared.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#090A0A',
+                        darkSecondary: '#191919',
+                        primary: '#8247E5',
+                        secondary: '#D434FE',
+                        accent: '#FF2E93',
+                        white: '#FFFFFF',
+                        white98: '#FAFAFA',
+                        grayDark: '#28282B',
+                    },
+                    fontFamily: {
+                        'sf-pro': ['SF Pro', 'sans-serif']
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            /* iOS Screen styles moved to shared.css */
+            /* Using ios-screen class instead of android-screen */
+            .gradient-overlay {
+                background: linear-gradient(180deg, rgba(10, 10, 10, 0) 0%, rgba(10, 10, 10, 0.8) 50%, rgba(10, 10, 10, 0.8) 100%);
+            }
+            .button-gradient {
+                background: linear-gradient(92deg, rgba(130, 71, 229, 1) 0%, rgba(212, 52, 254, 1) 45%, rgba(255, 46, 147, 1) 100%);
+            }
+            .hero-gradient {
+                background: linear-gradient(180deg, #8247E5 0%, #6331B6 100%);
+            }
+            .nav-button {
+                transition: all 0.3s ease;
+            }
+            .nav-button:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                transform: scale(1.05);
+            }
+            .plan-card {
+                transition: all 0.3s ease;
+            }
+            .plan-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(130, 71, 229, 0.2);
+            }
+            .continue-button {
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+            }
+            .continue-button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(130, 71, 229, 0.4);
+            }
+            .continue-button::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+                transition: left 0.6s;
+            }
+            .continue-button:hover::after {
+                left: 100%;
+            }
+            .feature-badge {
+                background: rgba(130, 71, 229, 0.1);
+                border: 1px solid rgba(130, 71, 229, 0.3);
+            }
+            .premium-badge {
+                background: linear-gradient(90deg, rgba(255, 128, 196, 1) 0%, rgba(255, 109, 113, 1) 100%);
+            }
+            .checkmark-gradient {
+                background: linear-gradient(90deg, rgba(130, 71, 229, 1) 0%, rgba(212, 52, 254, 1) 100%);
+            }
+        }
+    </style>
+</head>
+<body class="bg-black text-white font-sf-pro min-h-screen flex items-center justify-center">
+    <!-- iOS Device Container -->
+    <div class="ios-screen mx-auto bg-dark">
+        <!-- Status Bar - iOS Style -->
+        <div class="h-8 bg-dark z-50 flex items-center justify-between px-5">
+            <div class="text-xs text-white font-medium">9:41</div>
+            <div class="flex items-center space-x-2 text-white text-xs">
+                <i class="fa fa-signal"></i>
+                <i class="fa fa-wifi"></i>
+                <i class="fa fa-battery-full"></i>
+            </div>
+        </div>
+        
+        <!-- Navigation Bar -->
+        <nav class="flex items-center px-4 py-3 bg-dark border-b border-white/10">
+            <button id="back-button" class="p-2 rounded-full nav-button">
+                <i class="fa fa-arrow-left text-white text-xl"></i>
+            </button>
+            <h1 class="ml-4 text-lg font-semibold text-white">Subscription</h1>
+        </nav>
+
+
+    <!-- Main Content -->
+    <main class="pt-6 px-5 pb-8">
+        <!-- Title and Subtitle -->
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold mb-2">Choose Your Plan</h1>
+            <p class="text-base text-gray-400">Unlock all features with a basic subscription.</p>
+        </div>
+
+        <!-- Subscription Options -->
+        <div class="space-y-4">
+            <!-- Basic Plan -->
+            <div class="plan-card bg-darkSecondary rounded-xl border border-primary p-5 flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-6 h-6 rounded-full border border-primary mr-3 flex items-center justify-center">
+                        <div class="w-3.5 h-3.5 rounded-full bg-primary checkmark-gradient"></div>
+                    </div>
+                    <div>
+                        <span class="text-lg font-medium text-white">Basic</span>
+                        <p class="text-xs text-gray-400 mt-0.5">Limited access to features</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="text-lg font-medium text-white">$4.99/week</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Free Trial Toggle -->
+        <div class="mt-6">
+            <div class="flex items-center justify-between bg-darkSecondary rounded-xl p-5">
+                <div>
+                    <span class="text-base font-medium text-white">Free Trial Enabled</span>
+                    <p class="text-xs text-gray-400 mt-1">Start with a 1-day free trial</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="free-trial-toggle" class="sr-only peer">
+                    <div class="w-11 h-6 bg-grayDark peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Features List -->
+        <div class="mt-8">
+            <h3 class="text-sm font-medium text-gray-400 mb-3">BASIC PLAN FEATURES</h3>
+            <div class="space-y-3">
+                <div class="flex items-center text-sm">
+                    <i class="fa fa-check text-green-500 mr-3"></i>
+                    <span class="text-white">AI Photo Generation</span>
+                </div>
+                <div class="flex items-center text-sm">
+                    <i class="fa fa-times text-red-500 mr-3"></i>
+                    <span class="text-white">High-Resolution Output</span>
+                </div>
+                <div class="flex items-center text-sm">
+                    <i class="fa fa-times text-red-500 mr-3"></i>
+                    <span class="text-white">Priority Processing</span>
+                </div>
+                <div class="flex items-center text-sm">
+                    <i class="fa fa-times text-red-500 mr-3"></i>
+                    <span class="text-white">Exclusive Templates</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cancellation Note -->
+        <div class="mt-6 text-center">
+            <div class="flex items-center justify-center space-x-2">
+                <i class="fa fa-check-circle text-green-500"></i>
+                <p class="text-sm text-gray-400">You can cancel your subscription anytime.</p>
+            </div>
+        </div>
+
+        <!-- Continue Button -->
+        <div class="mt-10">
+            <button id="continue-button" class="continue-button w-full h-14 rounded-xl button-gradient flex items-center justify-center text-base font-medium text-white shadow-lg">
+                <i class="fa fa-play-circle mr-2"></i> Start Free Trial
+            </button>
+        </div>
+
+        <!-- Terms and Privacy -->
+        <div class="mt-8 text-center">
+            <p class="text-xs text-white98/70">
+                <a href="#" class="hover:underline">Privacy Policy</a> | <a href="#" class="hover:underline">Terms of Use</a>
+            </p>
+        </div>
+        <div class="h-16"></div>
+    </main>
+
+    <!-- Toast Message Container -->
+        <div id="toast-container" class="fixed inset-0 pointer-events-none z-50 flex items-center justify-center"></div>
+
+    <script type="module">
+        // 导入共享函数
+        import { 
+            buttonClickAnimation, 
+            showToast, 
+            navigateTo,
+            initializeSharedFunctions
+        } from './js/shared.js';
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化共享功能
+            initializeSharedFunctions();
+            
+            // Back button functionality
+            const backButton = document.getElementById('back-button');
+            if (backButton) {
+                backButton.addEventListener('click', function() {
+                    buttonClickAnimation(this);
+                    setTimeout(() => {
+                        window.location.href = 'home.html';
+                    }, 150);
+                });
+            }
+            
+            // Continue button functionality
+            const continueButton = document.getElementById('continue-button');
+            if (continueButton) {
+                continueButton.addEventListener('click', function() {
+                    buttonClickAnimation(this);
+                    setTimeout(() => {
+                        // Navigate to home page or show success message
+                        showSuccessMessage();
+                    }, 150);
+                });
+            }
+            
+            // Free trial toggle functionality
+            const freeTrialToggle = document.getElementById('free-trial-toggle');
+            if (freeTrialToggle && continueButton) {
+                // Check if free trial has already been used
+                const userData = JSON.parse(localStorage.getItem('userData')) || {};
+                const hasUsedFreeTrial = userData.hasUsedFreeTrial || false;
+                
+                // If free trial has been used, disable the toggle
+                if (hasUsedFreeTrial) {
+                    freeTrialToggle.checked = false;
+                    freeTrialToggle.disabled = true;
+                    // Style the disabled toggle
+                    const toggleLabel = freeTrialToggle.parentElement;
+                    if (toggleLabel) {
+                        toggleLabel.classList.add('opacity-50', 'cursor-not-allowed');
+                    }
+                }
+                
+                // Set initial button text based on toggle state (default: off)
+                continueButton.innerHTML = '<i class="fa fa-check-circle mr-2"></i> Subscribe Now';
+                
+                freeTrialToggle.addEventListener('change', function() {
+                    if (this.checked && !this.disabled) {
+                        continueButton.innerHTML = '<i class="fa fa-play-circle mr-2"></i> Start Free Trial';
+                    } else {
+                        continueButton.innerHTML = '<i class="fa fa-check-circle mr-2"></i> Subscribe Now';
+                    }
+                });
+            }
+            
+            // Terms and privacy policy links
+            const links = document.querySelectorAll('a');
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    alert('This would open the ' + this.textContent + ' page.');
+                });
+            });
+
+            // Success message function
+            function showSuccessMessage() {
+                // Update user data to reflect premium membership
+                updateUserData();
+                
+                // Show success toast
+                showToast('Subscription Started! You\'re now a premium member.', 'fa-check-circle', 5000);
+                
+                // Navigate to home page after a short delay
+                setTimeout(() => {
+                    window.location.href = 'home.html';
+                }, 2000);
+            }
+            
+            // Update user data function
+            function updateUserData() {
+                try {
+                    // Get current user data or initialize if not exists using our helper function
+                    let userData = window.getStorageItem('userData', {
+                        credits: 0,
+                        subscriptionCredits: 0,
+                        rechargeCredits: 0,
+                        totalCredits: 0,
+                        isPremiumMember: false,
+                        subscriptionEndDate: null,
+                        hasUsedFreeTrial: false,
+                        transactionHistory: []
+                    });
+                    
+                    // Ensure transactionHistory exists as an array
+                    if (!userData.transactionHistory) {
+                        userData.transactionHistory = [];
+                    }
+                    
+                    // Update premium status for Basic plan
+                    userData.isPremiumMember = true;
+                    
+                    // Calculate subscription end date (1 day from now)
+                    const subscriptionEndDate = new Date();
+                    subscriptionEndDate.setDate(subscriptionEndDate.getDate() + 1);
+                    userData.subscriptionEndDate = subscriptionEndDate.toISOString();
+                    
+                    // Add subscription credits (e.g., 200 credits for subscription)
+                    const subscriptionCredits = 200;
+                    userData.subscriptionCredits = subscriptionCredits;
+                    
+                    // Calculate total credits (subscription credits + recharge credits)
+                    userData.totalCredits = subscriptionCredits + (userData.rechargeCredits || 0);
+                    userData.credits = userData.totalCredits; // Keep backward compatibility
+                    
+                    // Check if free trial is enabled
+                    const freeTrialEnabled = document.getElementById('free-trial-toggle').checked;
+                    const description = freeTrialEnabled ? 'Basic plan with 7-day free trial' : 'Basic plan subscription';
+                    
+                    // Mark free trial as used if it was enabled
+                    if (freeTrialEnabled) {
+                        userData.hasUsedFreeTrial = true;
+                    }
+                    
+                    // Add transaction record
+                    const transaction = {
+                        type: 'subscription',
+                        description: description,
+                        creditsChange: subscriptionCredits,
+                        price: 4.99,
+                        timestamp: new Date().toISOString(),
+                        freeTrial: freeTrialEnabled,
+                        subscriptionEndDate: userData.subscriptionEndDate
+                    };
+                    
+                    userData.transactionHistory.push(transaction);
+                    
+                    // Save updated user data using our helper function
+                    window.setStorageItem('userData', userData);
+                    
+                    // Update credits display on all pages
+                    if (window.updateCreditsButton) {
+                        window.updateCreditsButton();
+                    }
+                    
+                } catch (error) {
+                    console.error('Error updating user subscription:', error);
+                    window.showToast('Error updating subscription', 'fa-exclamation-circle', 3000);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
