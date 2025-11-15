@@ -209,15 +209,39 @@ struct ProjectStyle: Codable {
 
 struct SelectedPhoto: Codable, Identifiable {
     let id: String
-    let imageData: Data?
+    let filePath: String?  // 文件系统路径，替代 imageData
     let imageUrl: String?
     let alt: String?
     
+    // 不再直接存储 imageData，而是存储文件路径
+    // imageData 作为计算属性从文件系统加载
+    var imageData: Data? {
+        guard let filePath = filePath else { return nil }
+        let url = AppViewModel.photosDirectory.appendingPathComponent(filePath)
+        return try? Data(contentsOf: url)
+    }
+    
     init(id: String = UUID().uuidString, imageData: Data? = nil, imageUrl: String? = nil, alt: String? = nil) {
         self.id = id
-        self.imageData = imageData
         self.imageUrl = imageUrl
         self.alt = alt
+        self.filePath = nil  // 文件路径将由 AppViewModel 在保存时设置
+        // imageData 参数用于临时存储，实际保存由 AppViewModel.addSelectedPhoto 处理
+    }
+    
+    // 用于从已存在的文件路径创建（从 UserDefaults 加载时使用）
+    init(id: String, filePath: String?, imageUrl: String? = nil, alt: String? = nil) {
+        self.id = id
+        self.filePath = filePath
+        self.imageUrl = imageUrl
+        self.alt = alt
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case filePath
+        case imageUrl
+        case alt
     }
 }
 

@@ -40,8 +40,8 @@ struct UserCreditsView: View {
                     title: "Plans & Credits",
                     showBackButton: true,
                     trailingButtons: [
-                        NavigationBarButton(id: "purchase", icon: "plus.circle") {
-                            showPurchase = true
+                        NavigationBarButton(id: "home", icon: "house.fill") {
+                            presentationMode.wrappedValue.dismiss()
                         }
                     ],
                     onBack: {

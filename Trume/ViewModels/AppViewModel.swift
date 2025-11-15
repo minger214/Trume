@@ -38,6 +38,12 @@ class AppViewModel: ObservableObject {
     private let presetTemplatesKey = "trume.preset.templates"
     private let customTemplatesKey = "trume.custom.templates"
     
+    // 照片文件系统存储目录
+    static var photosDirectory: URL {
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        return documentsPath.appendingPathComponent("SelectedPhotos", isDirectory: true)
+    }
+    
     init() {
         loadUserData()
         loadProjects()
@@ -453,29 +459,98 @@ class AppViewModel: ObservableObject {
     
     // MARK: - Selected Photos
     func loadSelectedPhotos() {
+        // 确保照片目录存在
+        try? FileManager.default.createDirectory(at: AppViewModel.photosDirectory, withIntermediateDirectories: true, attributes: nil)
+        
+        // 只加载元数据（文件路径），不加载实际图片数据
         if let data = userDefaults.data(forKey: "selectedPhotos"),
            let decoded = try? JSONDecoder().decode([SelectedPhoto].self, from: data) {
-            selectedPhotos = decoded
+            // 验证文件是否仍然存在
+            selectedPhotos = decoded.filter { photo in
+                guard let filePath = photo.filePath else { return false }
+                let url = AppViewModel.photosDirectory.appendingPathComponent(filePath)
+                return FileManager.default.fileExists(atPath: url.path)
+            }
+            // 如果文件被删除，更新 UserDefaults
+            if selectedPhotos.count != decoded.count {
+                saveSelectedPhotos()
+            }
         }
     }
     
     func saveSelectedPhotos() {
-        if let encoded = try? JSONEncoder().encode(selectedPhotos) {
-            userDefaults.set(encoded, forKey: "selectedPhotos")
+        // 只保存元数据（文件路径），不保存实际图片数据
+        // 创建一个轻量级的副本用于序列化
+        let photosMetadata = selectedPhotos.map { photo in
+            SelectedPhoto(id: photo.id, filePath: photo.filePath, imageUrl: photo.imageUrl, alt: photo.alt)
+        }
+        if let encoded = try? JSONEncoder().encode(photosMetadata) {
+            // 检查数据大小，如果仍然过大，可能还有其他数据问题
+            if encoded.count < 4 * 1024 * 1024 { // 4MB limit
+                userDefaults.set(encoded, forKey: "selectedPhotos")
+            } else {
+                print("Warning: Selected photos metadata is still too large: \(encoded.count) bytes")
+                // 尝试清理一些数据或提示用户
+            }
         }
     }
     
     func addSelectedPhoto(_ photo: SelectedPhoto) {
-        selectedPhotos.append(photo)
-        saveSelectedPhotos()
+        // 如果 photo 已经有 filePath，直接添加
+        if photo.filePath != nil {
+            selectedPhotos.append(photo)
+            saveSelectedPhotos()
+        } else {
+            // 如果没有 filePath，说明这是一个新照片，需要通过 addSelectedPhoto(imageData:) 方法添加
+            print("Warning: SelectedPhoto without filePath. Use addSelectedPhoto(imageData:) instead.")
+        }
+    }
+    
+    // 添加新照片（从图片数据）
+    func addSelectedPhoto(imageData: Data, id: String? = nil) {
+        let photoId = id ?? UUID().uuidString
+        let fileName = "\(photoId).jpg"
+        let url = AppViewModel.photosDirectory.appendingPathComponent(fileName)
+        
+        do {
+            try FileManager.default.createDirectory(at: AppViewModel.photosDirectory, withIntermediateDirectories: true, attributes: nil)
+            try imageData.write(to: url)
+            // 创建新的 photo 对象，包含文件路径
+            let photo = SelectedPhoto(id: photoId, filePath: fileName)
+            selectedPhotos.append(photo)
+            saveSelectedPhotos()
+        } catch {
+            print("Failed to save image to file system: \(error)")
+            showToast(message: "Failed to save photo", type: .error)
+        }
+    }
+    
+    // 从文件路径加载图片数据
+    func imageData(for photo: SelectedPhoto) -> Data? {
+        guard let filePath = photo.filePath else { return nil }
+        let url = AppViewModel.photosDirectory.appendingPathComponent(filePath)
+        return try? Data(contentsOf: url)
     }
     
     func removeSelectedPhoto(_ id: String) {
+        // 删除文件系统中的图片文件
+        if let photo = selectedPhotos.first(where: { $0.id == id }),
+           let filePath = photo.filePath {
+            let url = AppViewModel.photosDirectory.appendingPathComponent(filePath)
+            try? FileManager.default.removeItem(at: url)
+        }
         selectedPhotos.removeAll { $0.id == id }
         saveSelectedPhotos()
     }
     
     func clearSelectedPhotos() {
+        // 删除所有照片文件
+        for photo in selectedPhotos {
+            if let filePath = photo.filePath {
+                let url = AppViewModel.photosDirectory.appendingPathComponent(filePath)
+                try? FileManager.default.removeItem(at: url)
+            }
+        }
         selectedPhotos = []
         saveSelectedPhotos()
     }
@@ -526,9 +601,11 @@ class AppViewModel: ObservableObject {
         projects = []
         saveProjects()
         
-        // Clear selected photos
-        selectedPhotos = []
-        saveSelectedPhotos()
+        // Clear selected photos (including files)
+        clearSelectedPhotos()
+        
+        // 尝试删除整个照片目录
+        try? FileManager.default.removeItem(at: AppViewModel.photosDirectory)
         
         // Clear current session projects
         currentSessionProjects = []

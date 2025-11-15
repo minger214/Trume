@@ -187,17 +187,15 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showPhotoPicker) {
             PhotoPickerView(selection: $selectedItem) { image in
-                if let imageData = image.pngData() {
-                    let photo = SelectedPhoto(imageData: imageData)
-                    viewModel.addSelectedPhoto(photo)
+                if let imageData = image.jpegData(compressionQuality: 0.8) {
+                    viewModel.addSelectedPhoto(imageData: imageData)
                 }
             }
         }
         .fullScreenCover(isPresented: $showCamera) {
             CameraView { image in
-                if let imageData = image.pngData() {
-                    let photo = SelectedPhoto(imageData: imageData)
-                    viewModel.addSelectedPhoto(photo)
+                if let imageData = image.jpegData(compressionQuality: 0.8) {
+                    viewModel.addSelectedPhoto(imageData: imageData)
                 }
             }
         }
