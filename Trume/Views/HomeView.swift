@@ -21,6 +21,7 @@ struct HomeView: View {
     @State private var showPortfolioGeneratingView = false
     @State private var showPortfolioView = false
     @State private var showTemplateView = false
+    @State private var showSettingsView = false
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.dismiss) var dismiss
     
@@ -33,14 +34,7 @@ struct HomeView: View {
                 // Navigation Bar
                 NavigationBar(
                     title: "Trume",
-                    trailingButtons: [
-                        NavigationBarButton(id: "notifications", icon: "bell") {
-                            viewModel.showToast(message: "No new notifications", type: .info)
-                        },
-                        NavigationBarButton(id: "settings", icon: "gearshape") {
-                            viewModel.showToast(message: "Settings coming soon", type: .info)
-                        }
-                    ],
+                    trailingButtons: buildTrailingButtons(),
                     onBack: nil
                 )
                 .overlay(
@@ -90,14 +84,13 @@ struct HomeView: View {
                             .padding(16)
                             .background(Color(red: 0.098, green: 0.098, blue: 0.098))
                             
-                            HomeIntroduceImage()
+                            HomeIntroduceImage(onTap: {
+                                showPortfolioView = true
+                            })
                         }
                         .cornerRadius(16)
                         .padding(.horizontal, 16)
                         .padding(.top, 8)
-                        .onTapGesture {
-                            showTemplateView = true
-                        }
                         
                         // Selected Photos Display
                         if !viewModel.selectedPhotos.isEmpty {
@@ -116,21 +109,23 @@ struct HomeView: View {
                                     }
                                     
                                     // Add photo button
-                                    Button(action: {
-                                        showPhotoSourceSheet = true
-                                    }) {
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .fill(Color(red: 0.098, green: 0.098, blue: 0.098))
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 12)
-                                                        .stroke(Color.white.opacity(0.2), style: StrokeStyle(lineWidth: 2, dash: [5]))
-                                                )
-                                            Image(systemName: "plus")
-                                                .font(.system(size: 24))
-                                                .foregroundColor(.white.opacity(0.5))
+                                    if viewModel.selectedPhotos.count < viewModel.featureConfig.homePage.maxPhotoSelectionCount {
+                                        Button(action: {
+                                            showPhotoSourceSheet = true
+                                        }) {
+                                            ZStack {
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .fill(Color(red: 0.098, green: 0.098, blue: 0.098))
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 12)
+                                                            .stroke(Color.white.opacity(0.2), style: StrokeStyle(lineWidth: 2, dash: [5]))
+                                                    )
+                                                Image(systemName: "plus")
+                                                    .font(.system(size: 24))
+                                                    .foregroundColor(.white.opacity(0.5))
+                                            }
+                                            .aspectRatio(1, contentMode: .fit)
                                         }
-                                        .aspectRatio(1, contentMode: .fit)
                                     }
                                 }
                                 .padding(.horizontal, 16)
@@ -186,14 +181,26 @@ struct HomeView: View {
             .presentationDetents([.height(200)])
         }
         .sheet(isPresented: $showPhotoPicker) {
-            PhotoPickerView(selection: $selectedItem) { image in
-                if let imageData = image.jpegData(compressionQuality: 0.8) {
-                    viewModel.addSelectedPhoto(imageData: imageData)
-                }
-            }
+            PhotoPickerView(
+                selection: $selectedItem,
+                onImageSelected: { image in
+                    if viewModel.selectedPhotos.count >= viewModel.featureConfig.homePage.maxPhotoSelectionCount {
+                        viewModel.showToast(message: "Maximum \(viewModel.featureConfig.homePage.maxPhotoSelectionCount) photos allowed", type: .warning)
+                        return
+                    }
+                    if let imageData = image.jpegData(compressionQuality: 0.8) {
+                        viewModel.addSelectedPhoto(imageData: imageData)
+                    }
+                },
+                maxSelection: viewModel.featureConfig.homePage.maxPhotoSelectionCount
+            )
         }
         .fullScreenCover(isPresented: $showCamera) {
             CameraView { image in
+                if viewModel.selectedPhotos.count >= viewModel.featureConfig.homePage.maxPhotoSelectionCount {
+                    viewModel.showToast(message: "Maximum \(viewModel.featureConfig.homePage.maxPhotoSelectionCount) photos allowed", type: .warning)
+                    return
+                }
                 if let imageData = image.jpegData(compressionQuality: 0.8) {
                     viewModel.addSelectedPhoto(imageData: imageData)
                 }
@@ -248,6 +255,32 @@ struct HomeView: View {
                     #endif
             }
         }
+        .sheet(isPresented: $showSettingsView) {
+            NavigationView {
+                SettingsView(viewModel: viewModel)
+                    #if os(iOS)
+                    .navigationBarTitleDisplayMode(.inline)
+                    #endif
+            }
+        }
+    }
+    
+    private func buildTrailingButtons() -> [NavigationBarButton] {
+        var buttons: [NavigationBarButton] = []
+        
+        if viewModel.featureConfig.homePage.showNotificationButton {
+            buttons.append(NavigationBarButton(id: "notifications", icon: "bell") {
+                viewModel.showToast(message: "No new notifications", type: .info)
+            })
+        }
+        
+        if viewModel.featureConfig.homePage.showSettingsButton {
+            buttons.append(NavigationBarButton(id: "settings", icon: "gearshape") {
+                showSettingsView = true
+            })
+        }
+        
+        return buttons
     }
     
     private func handleContinue() {
@@ -299,22 +332,34 @@ struct HomeView: View {
 }
 
 private struct HomeIntroduceImage: View {
+    let onTap: (() -> Void)?
+    
+    init(onTap: (() -> Void)? = nil) {
+        self.onTap = onTap
+    }
+    
     var body: some View {
-        if UIImage(named: "home-introduce") != nil {
-            Image("home-introduce")
-                .resizable()
-                .scaledToFit()
-                .frame(maxWidth: .infinity)
-                .frame(height: 300)
-        } else {
-            Rectangle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(height: 300)
-                .overlay(
-                    Image(systemName: "photo.on.rectangle.angled")
-                        .font(.system(size: 60))
-                        .foregroundColor(.white.opacity(0.5))
-                )
+        Group {
+            if UIImage(named: "home-introduce") != nil {
+                Image("home-introduce")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 300)
+            } else {
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(height: 300)
+                    .overlay(
+                        Image(systemName: "photo.on.rectangle.angled")
+                            .font(.system(size: 60))
+                            .foregroundColor(.white.opacity(0.5))
+                    )
+            }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onTap?()
         }
     }
 }
@@ -409,12 +454,12 @@ struct PhotoSourceSheet: View {
 struct PhotoPickerView: UIViewControllerRepresentable {
     @Binding var selection: PhotosPickerItem?
     let onImageSelected: (UIImage) -> Void
-    @Environment(\.presentationMode) var presentationMode
+    var maxSelection: Int = 10
     
     func makeUIViewController(context: Context) -> PHPickerViewController {
         var config = PHPickerConfiguration()
         config.filter = .images
-        config.selectionLimit = 10
+        config.selectionLimit = maxSelection
         let picker = PHPickerViewController(configuration: config)
         picker.delegate = context.coordinator
         return picker
@@ -423,20 +468,18 @@ struct PhotoPickerView: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) {}
     
     func makeCoordinator() -> Coordinator {
-        Coordinator(onImageSelected: onImageSelected, presentationMode: presentationMode)
+        Coordinator(onImageSelected: onImageSelected)
     }
     
     class Coordinator: NSObject, PHPickerViewControllerDelegate {
         let onImageSelected: (UIImage) -> Void
-        let presentationMode: Binding<PresentationMode>
         
-        init(onImageSelected: @escaping (UIImage) -> Void, presentationMode: Binding<PresentationMode>) {
+        init(onImageSelected: @escaping (UIImage) -> Void) {
             self.onImageSelected = onImageSelected
-            self.presentationMode = presentationMode
         }
         
         func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-            presentationMode.wrappedValue.dismiss()
+            picker.dismiss(animated: true)
             
             for result in results {
                 result.itemProvider.loadObject(ofClass: UIImage.self) { object, error in

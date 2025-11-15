@@ -46,7 +46,7 @@ struct PortfolioGeneratingView: View {
             VStack(spacing: 0) {
                 // Navigation Bar
                 NavigationBar(
-                    title: "Generating",
+                    title: "Generated Projects",
                     showBackButton: true,
                     onBack: {
                         presentationMode.wrappedValue.dismiss()
@@ -54,15 +54,6 @@ struct PortfolioGeneratingView: View {
                 )
                 
                 VStack(spacing: 0) {
-                    // Header
-                    VStack(spacing: 6) {
-                        Text("Generated Projects")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.white)
-                    }
-                    .padding(.top, 16)
-                    .padding(.bottom, 16)
-
                     // Grid of current session projects
                     ScrollView {
                         if generationFailed {
@@ -95,7 +86,8 @@ struct PortfolioGeneratingView: View {
                             .padding(.vertical, 40)
                         } else {
                             let projects = viewModel.currentSessionProjects
-                            if projects.isEmpty {
+                            // 如果生成失败，应该显示错误信息，而不是等待消息
+                            if projects.isEmpty && !generationFailed {
                                 VStack(spacing: 12) {
                                     Image(systemName: "clock.arrow.circlepath")
                                         .font(.system(size: 32))
@@ -106,6 +98,35 @@ struct PortfolioGeneratingView: View {
                                 }
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 32)
+                            } else if projects.isEmpty && generationFailed {
+                                // 如果失败且没有项目，显示错误信息
+                                VStack(spacing: 16) {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .font(.system(size: 40))
+                                        .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.4))
+                                    Text("Generation Failed")
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundColor(.white)
+                                    Text(failureMessage ?? "An unexpected error occurred during generation.")
+                                        .font(.system(size: 14))
+                                        .multilineTextAlignment(.center)
+                                        .foregroundColor(.white.opacity(0.7))
+                                        .padding(.horizontal, 24)
+                                    
+                                    Button {
+                                        presentationMode.wrappedValue.dismiss()
+                                    } label: {
+                                        Text("Go Back")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(.white)
+                                            .padding(.horizontal, 24)
+                                            .padding(.vertical, 12)
+                                            .background(Color(red: 0.51, green: 0.28, blue: 0.9))
+                                            .cornerRadius(10)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 40)
                             } else {
                                 let columnCount = max(1, min(3, projects.count))
                                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: columnCount), spacing: 12) {
@@ -281,8 +302,13 @@ struct PortfolioGeneratingView: View {
         // 检查是否有用户选择的照片
         guard !viewModel.selectedPhotos.isEmpty else {
             log("No selected photos. Aborting generation.")
+            generationFailed = true
+            failureMessage = "Please select photos first"
             viewModel.showToast(message: "Please select photos first", type: .error)
-            presentationMode.wrappedValue.dismiss()
+            // 清空项目列表以显示错误信息
+            viewModel.currentSessionProjects = []
+            viewModel.saveCurrentSessionProjects()
+            viewModel.cancelPendingGenerationCredits()
             return
         }
         
@@ -327,19 +353,27 @@ struct PortfolioGeneratingView: View {
                     
                 case .failure(let error):
                     self.log("Generation failed. error=\(error.localizedDescription)")
+                    // 确保在主线程更新 UI 状态
+                    self.generationFailed = true
+                    // 使用 error.localizedDescription 或 errorDescription 获取错误消息
+                    let errorMessage = error.errorDescription ?? error.localizedDescription
+                    self.failureMessage = errorMessage
                     self.viewModel.showToast(
-                        message: "Generation failed: \(error.localizedDescription)",
+                        message: "Generation failed: \(errorMessage)",
                         type: .error
                     )
-                    self.generationFailed = true
-                    self.failureMessage = error.localizedDescription
                     self.estimatedTime = 0
                     self.resetSimulatedProgress()
                     progress = 0.0
                     self.simulatedProgress = 0.0
                     self.viewModel.generationProgress = 0.0
-                    self.viewModel.currentSessionProjects = []
-                    self.viewModel.saveCurrentSessionProjects()
+                    // 不要立即清空 currentSessionProjects，让错误信息能正确显示
+                    // 只有在确实有项目时才清空，否则保留状态以显示错误
+                    if !self.viewModel.currentSessionProjects.isEmpty {
+                        self.viewModel.currentSessionProjects = []
+                        self.viewModel.saveCurrentSessionProjects()
+                    }
+                    // 取消待处理的积分并重置生成状态（这个方法会设置 isGenerationInProgress = false）
                     self.viewModel.cancelPendingGenerationCredits()
                     // 可以选择重试或返回
                 }
@@ -468,9 +502,12 @@ struct PortfolioGeneratingView: View {
     }
     
     private func updateProgress() {
+        // 如果生成失败，停止所有进度更新
         guard !generationFailed else { return }
         // 如果API调用已完成，不再更新进度
         guard progress < 1.0 else { return }
+        // 如果没有项目且没有失败，说明还在初始化阶段，不更新进度
+        guard !viewModel.currentSessionProjects.isEmpty else { return }
         
         // 如果所有项目都已完成，停止计时器
         let allCompleted = viewModel.currentSessionProjects.allSatisfy { $0.status == .completed }

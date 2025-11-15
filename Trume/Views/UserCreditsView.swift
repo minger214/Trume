@@ -88,6 +88,17 @@ struct UserCreditsView: View {
                         .padding(.horizontal, 16)
                         .padding(.top, 16)
                         
+                        // Subscription Status / Plans
+                        SubscriptionStatusCard(
+                            isActive: viewModel.userData.isActiveMember,
+                            endDate: viewModel.userData.subscription.endDate,
+                            subscriptionPlan: viewModel.userData.subscription.plan,
+                            userType: viewModel.userData.userType,
+                            showManageButton: viewModel.featureConfig.userCreditsPage.showManageSubscriptionButton,
+                            onManageOrSubscribe: { showSubscription = true }
+                        )
+                        .padding(.horizontal, 16)
+
                         // Credit Breakdown
                         CreditBreakdownCard(
                             subscriptionCredits: viewModel.userData.credits.subscriptionCredits,
@@ -106,50 +117,46 @@ struct UserCreditsView: View {
                             }
                         )
                         .padding(.horizontal, 16)
-
-                        // Subscription Status / Plans
-                        SubscriptionStatusCard(
-                            isActive: viewModel.userData.isActiveMember,
-                            endDate: viewModel.userData.subscription.endDate,
-                            subscriptionPlan: viewModel.userData.subscription.plan,
-                            userType: viewModel.userData.userType,
-                            onManageOrSubscribe: { showSubscription = true }
-                        )
-                        .padding(.horizontal, 16)
                         
                         // Transaction History Button
-                        Button(action: {
-                            showTransactionHistory = true
-                        }) {
-                            HStack {
-                                Text("View Transaction History")
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundColor(.white)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.6))
+                        if viewModel.featureConfig.userCreditsPage.showTransactionHistoryButton {
+                            Button(action: {
+                                showTransactionHistory = true
+                            }) {
+                                HStack {
+                                    Text("View Transaction History")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(.white)
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(.white.opacity(0.6))
+                                }
+                                .padding(16)
+                                .background(Color(red: 0.098, green: 0.098, blue: 0.098))
+                                .cornerRadius(16)
                             }
-                            .padding(16)
-                            .background(Color(red: 0.098, green: 0.098, blue: 0.098))
-                            .cornerRadius(16)
+                            .padding(.horizontal, 16)
                         }
-                        .padding(.horizontal, 16)
                         
                         // Clear Data Button
-                        Button(action: {
-                            showClearDataAlert = true
-                        }) {
-                            Text("Clear All Data")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 50)
-                                .background(Color.red.opacity(0.8))
-                                .cornerRadius(12)
+                        if viewModel.featureConfig.userCreditsPage.showClearDataButton {
+                            Button(action: {
+                                showClearDataAlert = true
+                            }) {
+                                Text("Clear All Data")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 50)
+                                    .background(Color.red.opacity(0.8))
+                                    .cornerRadius(12)
+                            }
+                            .padding(.horizontal, 16)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 32)
+                        
+                        Spacer()
+                            .frame(height: 32)
                     }
                 }
             }
@@ -269,6 +276,7 @@ private struct SubscriptionStatusCard: View {
     let endDate: Date?
     let subscriptionPlan: SubscriptionPlan?
     let userType: UserType
+    let showManageButton: Bool
     let onManageOrSubscribe: () -> Void
     
     var statusText: String {
@@ -357,20 +365,22 @@ private struct SubscriptionStatusCard: View {
                     .foregroundColor(Color.white.opacity(0.7))
             }
             
-            Button(action: onManageOrSubscribe) {
-                Text(isActive ? "Manage Subscription" : "Subscribe Now")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(
-                        LinearGradient(
-                            colors: [Color(red: 0.51, green: 0.28, blue: 0.9), Color(red: 0.83, green: 0.2, blue: 1.0)],
-                            startPoint: .leading,
-                            endPoint: .trailing
+            if showManageButton {
+                Button(action: onManageOrSubscribe) {
+                    Text(isActive ? "Manage Subscription" : "Subscribe Now")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(
+                            LinearGradient(
+                                colors: [Color(red: 0.51, green: 0.28, blue: 0.9), Color(red: 0.83, green: 0.2, blue: 1.0)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
                         )
-                    )
-                    .cornerRadius(12)
+                        .cornerRadius(12)
+                }
             }
         }
         .padding(16)

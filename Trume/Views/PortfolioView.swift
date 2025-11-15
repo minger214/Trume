@@ -46,9 +46,6 @@ struct PortfolioView: View {
                                 message: "Sorted by \(sortOrder == .newest ? "newest first" : "oldest first")",
                                 type: .info
                             )
-                        },
-                        NavigationBarButton(id: "home", icon: "house") {
-                            // Navigate to home
                         }
                     ],
                     onBack: {

@@ -37,6 +37,10 @@ class AppViewModel: ObservableObject {
     
     private let presetTemplatesKey = "trume.preset.templates"
     private let customTemplatesKey = "trume.custom.templates"
+    private let featureConfigKey = "trume.feature.configuration"
+    
+    // Feature Configuration
+    @Published var featureConfig: FeatureConfiguration = .default
     
     // 照片文件系统存储目录
     static var photosDirectory: URL {
@@ -50,6 +54,7 @@ class AppViewModel: ObservableObject {
         loadSelectedPhotos()
         loadCurrentSessionProjects()
         loadTemplateLibrary()
+        loadFeatureConfiguration()
     }
     
     // MARK: - User Data
@@ -629,6 +634,36 @@ class AppViewModel: ObservableObject {
         userDefaults.removeObject(forKey: customTemplatesKey)
         
         showToast(message: "All user data cleared", type: .success)
+    }
+    
+    // MARK: - Feature Configuration
+    func loadFeatureConfiguration() {
+        if let data = userDefaults.data(forKey: featureConfigKey),
+           let decoded = try? JSONDecoder().decode(FeatureConfiguration.self, from: data) {
+            featureConfig = decoded
+            // 更新 FaceChainService 的配置
+            updateFaceChainServiceConfiguration()
+        } else {
+            featureConfig = .default
+            saveFeatureConfiguration()
+        }
+    }
+    
+    func saveFeatureConfiguration() {
+        if let encoded = try? JSONEncoder().encode(featureConfig) {
+            userDefaults.set(encoded, forKey: featureConfigKey)
+            // 更新 FaceChainService 的配置
+            updateFaceChainServiceConfiguration()
+        }
+    }
+    
+    private func updateFaceChainServiceConfiguration() {
+        faceChainService.updateConfiguration(
+            maxTrainingPollingAttempts: featureConfig.portfolioGeneration.maxTrainingPollingAttempts,
+            trainingPollingInterval: featureConfig.portfolioGeneration.trainingPollingInterval,
+            maxPollingAttempts: featureConfig.portfolioGeneration.maxPollingAttempts,
+            pollingInterval: featureConfig.portfolioGeneration.pollingInterval
+        )
     }
     
     // MARK: - Toast

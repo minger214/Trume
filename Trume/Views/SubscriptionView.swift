@@ -82,29 +82,31 @@ struct SubscriptionView: View {
                         .padding(.horizontal, 16)
                         
                         // Free Trial Toggle
-                        HStack(spacing: 12) {
-                            Text(hasUsedFreeTrial ? "Free trial already used" : "Free trial enabled")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(hasUsedFreeTrial ? Color.white.opacity(0.5) : .white)
-                            
-                            Spacer()
-                            
-                            Toggle("", isOn: $showFreeTrial)
-                                .tint(Color(red: 0.51, green: 0.28, blue: 0.9))
-                                .disabled(hasUsedFreeTrial)
-                                .labelsHidden()
+                        if viewModel.featureConfig.subscriptionPage.showFreeTrial {
+                            HStack(spacing: 12) {
+                                Text(hasUsedFreeTrial ? "Free trial already used" : "Free trial enabled")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundColor(hasUsedFreeTrial ? Color.white.opacity(0.5) : .white)
+                                
+                                Spacer()
+                                
+                                Toggle("", isOn: $showFreeTrial)
+                                    .tint(Color(red: 0.51, green: 0.28, blue: 0.9))
+                                    .disabled(hasUsedFreeTrial)
+                                    .labelsHidden()
+                            }
+                            .padding(16)
+                            .background(Color(red: 0.098, green: 0.098, blue: 0.098))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(
+                                        hasUsedFreeTrial ? Color.white.opacity(0.2) : Color(red: 0.51, green: 0.28, blue: 0.9).opacity(0.5),
+                                        lineWidth: 1.5
+                                    )
+                            )
+                            .cornerRadius(12)
+                            .padding(.horizontal, 16)
                         }
-                        .padding(16)
-                        .background(Color(red: 0.098, green: 0.098, blue: 0.098))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(
-                                    hasUsedFreeTrial ? Color.white.opacity(0.2) : Color(red: 0.51, green: 0.28, blue: 0.9).opacity(0.5),
-                                    lineWidth: 1.5
-                                )
-                        )
-                        .cornerRadius(12)
-                        .padding(.horizontal, 16)
                         
                         // Terms Links
                         HStack(spacing: 16) {

@@ -30,13 +30,37 @@ class FaceChainAPIService {
     private let logger = Logger(subsystem: "com.trume.facechain", category: "FaceChainAPIService")
     
     // 最多轮询任务结果次数（官方示例中每 10 秒轮询一次）
-    private let maxPollingAttempts = 18
-    private let pollingInterval: TimeInterval = 5.0
-    private let maxTrainingPollingAttempts = 36
-    private let trainingPollingInterval: TimeInterval = 10.0
+    private var maxPollingAttempts = 18
+    private var pollingInterval: TimeInterval = 5.0
+    private var maxTrainingPollingAttempts = 36
+    private var trainingPollingInterval: TimeInterval = 10.0
     
-    init(session: URLSession = .shared) {
-        self.session = session
+    init(session: URLSession? = nil) {
+        // 创建一个自定义配置的 URLSession，避免后台任务相关的问题
+        if let session = session {
+            self.session = session
+        } else {
+            let configuration = URLSessionConfiguration.default
+            configuration.allowsCellularAccess = true
+            configuration.timeoutIntervalForRequest = 60
+            configuration.timeoutIntervalForResource = 300
+            configuration.waitsForConnectivity = false
+            // 明确指定不使用后台会话，避免 RBSAssertion 错误
+            self.session = URLSession(configuration: configuration)
+        }
+    }
+    
+    // 更新配置参数
+    func updateConfiguration(
+        maxTrainingPollingAttempts: Int,
+        trainingPollingInterval: TimeInterval,
+        maxPollingAttempts: Int,
+        pollingInterval: TimeInterval
+    ) {
+        self.maxTrainingPollingAttempts = maxTrainingPollingAttempts
+        self.trainingPollingInterval = trainingPollingInterval
+        self.maxPollingAttempts = maxPollingAttempts
+        self.pollingInterval = pollingInterval
     }
     
     // MARK: - Generate Portraits
@@ -121,9 +145,20 @@ class FaceChainAPIService {
         
         dispatchGroup.notify(queue: .main) {
             let flattenedResults = results.flatMap { $0 }.filter { !$0.isEmpty }
-            if let firstError = errors.first {
-                self.logger.error("❌ Generation encountered an error. aborting. error=\(firstError.localizedDescription)")
-                completion(.failure(firstError))
+            let successCount = results.filter { !$0.isEmpty }.count
+            
+            // 如果有错误，显示详细的错误信息
+            if !errors.isEmpty {
+                let errorMessages = errors.map { $0.localizedDescription }.joined(separator: "; ")
+                if successCount == 0 {
+                    // 所有模板都失败了
+                    self.logger.error("❌ Generation failed for all templates. errors=\(errorMessages)")
+                    completion(.failure(.apiError("Generation failed for all templates: \(errorMessages)")))
+                } else {
+                    // 部分失败
+                    self.logger.error("❌ Generation partially failed. succeeded=\(successCount)/\(templateCount), errors=\(errorMessages)")
+                    completion(.failure(.apiError("Generation partially failed (\(successCount)/\(templateCount) succeeded): \(errorMessages)")))
+                }
                 return
             }
             
@@ -448,9 +483,9 @@ class FaceChainAPIService {
         attempts: Int,
         completion: @escaping (Result<String, FaceChainError>) -> Void
     ) {
-        guard attempts < maxTrainingPollingAttempts else {
-            logger.error("⏱️ Finetune polling timeout. jobId=\(jobId)")
-            completion(.failure(.apiError("Finetune job timeout")))
+        guard attempts < self.maxTrainingPollingAttempts else {
+            logger.error("⏱️ Finetune polling timeout. jobId=\(jobId), attempts=\(attempts), max=\(self.maxTrainingPollingAttempts)")
+            completion(.failure(.apiError("Finetune job timeout after \(attempts) attempts (max: \(self.maxTrainingPollingAttempts))")))
             return
         }
         
@@ -503,7 +538,8 @@ class FaceChainAPIService {
                         
                     default:
                         self.logger.debug("⏳ Finetune job pending. jobId=\(jobId), status=\(status), attempt=\(attempts)")
-                        DispatchQueue.global().asyncAfter(deadline: .now() + self.trainingPollingInterval) {
+                        let interval = self.trainingPollingInterval
+                        DispatchQueue.global().asyncAfter(deadline: .now() + interval) {
                             self.pollFinetuneJob(
                                 jobId: jobId,
                                 attempts: attempts + 1,
@@ -566,9 +602,9 @@ class FaceChainAPIService {
     ) {
         logger.debug("🔄 Polling task. taskId=\(taskId), attempt=\(attempts)")
         
-        guard attempts < maxPollingAttempts else {
-            logger.error("⏱️ Generation polling timeout. taskId=\(taskId)")
-            completion(.failure(.apiError("Generation timeout")))
+        guard attempts < self.maxPollingAttempts else {
+            logger.error("⏱️ Generation polling timeout. taskId=\(taskId), attempts=\(attempts), max=\(self.maxPollingAttempts)")
+            completion(.failure(.apiError("Generation polling timeout after \(attempts) attempts")))
             return
         }
         
@@ -627,7 +663,8 @@ class FaceChainAPIService {
                         
                     default:
                         self.logger.debug("⏳ Task still running. taskId=\(taskId), status=\(status)")
-                        DispatchQueue.global().asyncAfter(deadline: .now() + self.pollingInterval) {
+                        let interval = self.pollingInterval
+                        DispatchQueue.global().asyncAfter(deadline: .now() + interval) {
                             self.pollGenerationResult(
                                 taskId: taskId,
                                 attempts: attempts + 1,
