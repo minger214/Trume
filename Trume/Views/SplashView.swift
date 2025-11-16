@@ -19,16 +19,12 @@ struct SplashView: View {
             
             VStack(spacing: 0) {
                 Spacer()
-                
-                Image(systemName: "photo.artframe")
-                    .font(.system(size: 80))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color(red: 0.51, green: 0.28, blue: 0.9), Color(red: 0.83, green: 0.2, blue: 1.0)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+            
+                Image("logo")
+                    .resizable()
+                    .renderingMode(.original)
+                    .scaledToFit()
+                    .frame(width: 260, height: 260)
                     .scaleEffect(scale)
                     .opacity(opacity)
                 
