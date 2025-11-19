@@ -274,11 +274,11 @@ struct HomeView: View {
             })
         }
         
-        if viewModel.featureConfig.homePage.showSettingsButton {
+        //if viewModel.featureConfig.homePage.showSettingsButton {
             buttons.append(NavigationBarButton(id: "settings", icon: "gearshape") {
                 showSettingsView = true
             })
-        }
+        //}
         
         return buttons
     }

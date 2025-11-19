@@ -187,6 +187,40 @@ struct SettingsView: View {
                                         set: { config.subscriptionPage.showFreeTrial = $0 }
                                     )
                                 )
+                                
+                                Divider().background(Color.white.opacity(0.1))
+                                
+                                // Basic Plan Toggle
+                                ConfigurationToggleRow(
+                                    title: "Basic Plan",
+                                    description: "Show/hide Basic subscription plan",
+                                    isOn: Binding(
+                                        get: { config.subscriptionPage.showBasicPlan },
+                                        set: { config.subscriptionPage.showBasicPlan = $0 }
+                                    )
+                                )
+                                
+                                // Premium Plan Toggle
+                                ConfigurationToggleRow(
+                                    title: "Premium Plan",
+                                    description: "Show/hide Premium subscription plan",
+                                    isOn: Binding(
+                                        get: { config.subscriptionPage.showPremiumPlan },
+                                        set: { config.subscriptionPage.showPremiumPlan = $0 }
+                                    )
+                                )
+                                
+                                Divider().background(Color.white.opacity(0.1))
+                                
+                                // Payment Processing Toggle
+                                ConfigurationToggleRow(
+                                    title: "Enable Payment Processing",
+                                    description: "If enabled, calls real payment. If disabled, skips payment and directly processes subscription.",
+                                    isOn: Binding(
+                                        get: { config.subscriptionPage.enablePaymentProcessing },
+                                        set: { config.subscriptionPage.enablePaymentProcessing = $0 }
+                                    )
+                                )
                             }
                         }
                         

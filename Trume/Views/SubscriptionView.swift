@@ -32,6 +32,10 @@ struct SubscriptionView: View {
         }
     }
     
+    var hasAvailablePlans: Bool {
+        viewModel.featureConfig.subscriptionPage.showBasicPlan || viewModel.featureConfig.subscriptionPage.showPremiumPlan
+    }
+    
     var body: some View {
         ZStack {
             Color(red: 0.035, green: 0.039, blue: 0.039)
@@ -65,18 +69,22 @@ struct SubscriptionView: View {
                         
                         // Plans
                         VStack(spacing: 16) {
-                            PlanCard(
-                                plan: .basic,
-                                isSelected: selectedPlan == .basic
-                            ) {
-                                selectedPlan = .basic
+                            if viewModel.featureConfig.subscriptionPage.showBasicPlan {
+                                PlanCard(
+                                    plan: .basic,
+                                    isSelected: selectedPlan == .basic
+                                ) {
+                                    selectedPlan = .basic
+                                }
                             }
                             
-                            PlanCard(
-                                plan: .premium,
-                                isSelected: selectedPlan == .premium
-                            ) {
-                                selectedPlan = .premium
+                            if viewModel.featureConfig.subscriptionPage.showPremiumPlan {
+                                PlanCard(
+                                    plan: .premium,
+                                    isSelected: selectedPlan == .premium
+                                ) {
+                                    selectedPlan = .premium
+                                }
                             }
                         }
                         .padding(.horizontal, 16)
@@ -154,8 +162,8 @@ struct SubscriptionView: View {
                             )
                             .cornerRadius(12)
                         }
-                        .disabled(isProcessingPayment)
-                        .opacity(isProcessingPayment ? 0.7 : 1.0)
+                        .disabled(isProcessingPayment || !hasAvailablePlans)
+                        .opacity((isProcessingPayment || !hasAvailablePlans) ? 0.7 : 1.0)
                         .padding(.horizontal, 16)
                         .padding(.top, 24)
                         .padding(.bottom, 32)
@@ -164,6 +172,22 @@ struct SubscriptionView: View {
             }
         }
         .onAppear {
+            // 根据配置调整默认选中的计划
+            let showBasic = viewModel.featureConfig.subscriptionPage.showBasicPlan
+            let showPremium = viewModel.featureConfig.subscriptionPage.showPremiumPlan
+            
+            if !showBasic && showPremium {
+                // 如果 basic 被隐藏，默认选中 premium
+                selectedPlan = .premium
+            } else if showBasic && !showPremium {
+                // 如果 premium 被隐藏，默认选中 basic
+                selectedPlan = .basic
+            } else if !showBasic && !showPremium {
+                // 如果两个都被隐藏，显示警告
+                viewModel.showToast(message: "No subscription plans available", type: .warning)
+            }
+            // 如果两个都显示，保持默认的 premium
+            
             if #available(iOS 15.0, *) {
                 if storeKitManager == nil {
                     storeKitManager = StoreKitManager()
@@ -193,9 +217,17 @@ struct SubscriptionView: View {
             return
         }
         
-        // 处理付费订阅 - 调用支付
+        // 处理付费订阅 - 根据配置决定是否调用支付
         Task {
-            await processPayment()
+            if viewModel.featureConfig.subscriptionPage.enablePaymentProcessing {
+                // 配置为有效，正常调用支付流程
+                await processPayment()
+            } else {
+                // 配置为无效，直接调用成功处理（跳过支付）
+                isProcessingPayment = true
+                viewModel.showToast(message: "Processing subscription...", type: .info)
+                await handlePaymentSuccess()
+            }
         }
     }
     

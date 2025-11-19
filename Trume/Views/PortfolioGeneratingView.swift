@@ -131,7 +131,7 @@ struct PortfolioGeneratingView: View {
                                 let columnCount = max(1, min(3, projects.count))
                                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: columnCount), spacing: 12) {
                                     ForEach(projects) { project in
-                                        VStack(spacing: 4) {
+                                        VStack(spacing: 8) {
                                             AsyncImage(url: URL(string: project.imageUrl)) { image in
                                                 image
                                                     .resizable()
@@ -154,9 +154,16 @@ struct PortfolioGeneratingView: View {
                                                 , alignment: .bottom
                                             )
                                             
-                                            Text(project.status == .completed ? "Completed" : "Processing...")
-                                                .font(.system(size: 10))
-                                                .foregroundColor(project.status == .completed ? Color(red: 0.2, green: 0.78, blue: 0.35) : .white)
+                                            // Individual progress bar for each project
+                                            VStack(spacing: 4) {
+                                                ProgressView(value: project.progress, total: 1.0)
+                                                    .progressViewStyle(CustomProgressViewStyle())
+                                                
+                                                Text(project.status == .completed ? "Completed" : "\(Int(project.progress * 100))%")
+                                                    .font(.system(size: 10))
+                                                    .foregroundColor(project.status == .completed ? Color(red: 0.2, green: 0.78, blue: 0.35) : .white)
+                                            }
+                                            .padding(.horizontal, 4)
                                         }
                                     }
                                 }
@@ -165,17 +172,6 @@ struct PortfolioGeneratingView: View {
                             }
                         }
                     }
-                    
-                    // Progress Bar
-                    VStack(spacing: 12) {
-                        ProgressView(value: progress, total: 1.0)
-                            .progressViewStyle(CustomProgressViewStyle())
-                        Text("\(Int(progress * 100))%")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.white)
-                    }
-                    .padding(.horizontal, 32)
-                    .padding(.vertical, 16)
                     
                     // Save Button
                     Button(action: {

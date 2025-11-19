@@ -33,6 +33,9 @@ struct FeatureConfiguration: Codable {
     // MARK: - Subscription Page Configuration
     struct SubscriptionPageConfig: Codable {
         var showFreeTrial: Bool = false
+        var showBasicPlan: Bool = true
+        var showPremiumPlan: Bool = false
+        var enablePaymentProcessing: Bool = true
     }
     
     var homePage: HomePageConfig = HomePageConfig()
