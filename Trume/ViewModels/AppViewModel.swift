@@ -377,6 +377,11 @@ class AppViewModel: ObservableObject {
         generationProgress = 0.0
     }
     
+    func markGenerationCompleted() {
+        isGenerationInProgress = false
+        generationProgress = 1.0
+    }
+    
     func addCredits(_ amount: Int, type: Transaction.TransactionType, description: String, subscriptionEndDate: Date? = nil, subscriptionPlan: SubscriptionPlan? = nil) {
         if type == .subscription {
             userData.credits.subscriptionCredits += amount

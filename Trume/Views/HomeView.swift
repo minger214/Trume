@@ -48,19 +48,34 @@ struct HomeView: View {
                                 showSubscriptionView = true
                             }
                         }) {
-                            ZStack {
-                                Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color(red: 0.51, green: 0.28, blue: 0.9), Color(red: 0.83, green: 0.2, blue: 1.0)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                    .frame(width: 40, height: 40)
-                                Text(viewModel.userData.isActiveMember ? "\(viewModel.userData.credits.totalCredits)" : "PRO")
+                            if viewModel.userData.isActiveMember {
+                                // 活跃用户：显示图标和积分
+                                HStack(spacing: 5) {
+                                    Image(systemName: "circle.circle.fill")
+                                        .font(.system(size: 13))
+                                        .foregroundColor(.white)
+                                    Text("\(viewModel.userData.credits.totalCredits)")
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .foregroundColor(.white)
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(
+                                    Capsule()
+                                        .fill(Color.gray)
+                                )
+                            } else {
+                                // 非活跃用户：只显示斜体 PRO
+                                Text("PRO")
                                     .font(.system(size: 12, weight: .semibold))
+                                    .italic()
                                     .foregroundColor(.white)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(
+                                        Capsule()
+                                            .fill(Color.gray)
+                                    )
                             }
                         }
                         .padding(.leading, 16)
@@ -69,117 +84,144 @@ struct HomeView: View {
                 )
                 
                 ScrollView {
-                    VStack(spacing: 16) {
+                    VStack(spacing: 0) {
                         // Featured Section
-                        VStack(spacing: 0) {
+                        VStack(alignment: .leading, spacing: 16) {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Show us what you look like")
-                                    .font(.system(size: 20, weight: .semibold))
+                                    .font(.system(size: 24, weight: .semibold))
                                     .foregroundColor(.white)
-                                Text("Upload your selfies to help the AI generate realistic portrait photos of you!")
-                                    .font(.system(size: 14))
+                                Text("Upload your selfies to help the AI generate realistic portrait photos of you !")
+                                    .font(.system(size: 16))
                                     .foregroundColor(Color.white.opacity(0.6))
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(16)
-                            .background(Color(red: 0.098, green: 0.098, blue: 0.098))
+                            .padding(.vertical, 16)
+                            .padding(.horizontal, 16)
+                            .background(Color.black)
                             
-                            HomeIntroduceImage(onTap: {
-                                showPortfolioView = true
-                            })
+                            HomeIntroduceImage()
                         }
                         .cornerRadius(16)
-                        .padding(.horizontal, 16)
+                        // .padding(.horizontal, 16)
                         .padding(.top, 8)
                         
                         // Selected Photos Display
                         if !viewModel.selectedPhotos.isEmpty {
-                            VStack(alignment: .leading, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 16) {
                                 Text("Your selfies")
-                                    .font(.system(size: 16, weight: .medium))
+                                    .font(.system(size: 17, weight: .medium))
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 16)
                                 
-                                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 4), spacing: 12) {
-                                    ForEach(viewModel.selectedPhotos) { photo in
-                                        PhotoThumbnailView(photo: photo, onDelete: {
-                                            viewModel.removeSelectedPhoto(photo.id)
-                                            viewModel.showToast(message: "Photo removed", type: .success)
-                                        })
-                                    }
-                                    
-                                    // Add photo button
-                                    if viewModel.selectedPhotos.count < viewModel.featureConfig.homePage.maxPhotoSelectionCount {
-                                        Button(action: {
-                                            showPhotoSourceSheet = true
-                                        }) {
-                                            ZStack {
-                                                RoundedRectangle(cornerRadius: 12)
-                                                    .fill(Color(red: 0.098, green: 0.098, blue: 0.098))
-                                                    .overlay(
-                                                        RoundedRectangle(cornerRadius: 12)
-                                                            .stroke(Color.white.opacity(0.2), style: StrokeStyle(lineWidth: 2, dash: [5]))
-                                                    )
-                                                Image(systemName: "plus")
-                                                    .font(.system(size: 24))
-                                                    .foregroundColor(.white.opacity(0.5))
+                                // Border only around LazyVGrid
+                                VStack {
+                                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 12) {
+                                        ForEach(viewModel.selectedPhotos) { photo in
+                                            PhotoThumbnailView(photo: photo, onDelete: {
+                                                viewModel.removeSelectedPhoto(photo.id)
+                                                viewModel.showToast(message: "Photo removed", type: .success)
+                                            })
+                                        }
+                                        
+                                        // Add photo button
+                                        if viewModel.selectedPhotos.count < viewModel.featureConfig.homePage.maxPhotoSelectionCount {
+                                            Button(action: {
+                                                showPhotoSourceSheet = true
+                                            }) {
+                                                ZStack {
+                                                    RoundedRectangle(cornerRadius: 12)
+                                                        .fill(Color(red: 0.098, green: 0.098, blue: 0.098))
+                                                        .overlay(
+                                                            RoundedRectangle(cornerRadius: 12)
+                                                                .stroke(Color.white.opacity(0.2), style: StrokeStyle(lineWidth: 2, dash: [5]))
+                                                        )
+                                                    Image(systemName: "plus")
+                                                        .font(.system(size: 24))
+                                                        .foregroundColor(.white.opacity(0.5))
+                                                }
+                                                .aspectRatio(1, contentMode: .fit)
                                             }
-                                            .aspectRatio(1, contentMode: .fit)
                                         }
                                     }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 16)
                                 }
-                                .padding(.horizontal, 16)
-                            }
-                        }
-                        
-                        // Upload Button
-                        Button(action: {
-                            if !viewModel.selectedPhotos.isEmpty {
-                                // Continue with generation
-                                handleContinue()
-                            } else {
-                                showPhotoSourceSheet = true
-                            }
-                        }) {
-                            Text(viewModel.selectedPhotos.isEmpty ? "Upload photos" : "Continue")
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 56)
-                                .background(
-                                    LinearGradient(
-                                        colors: [Color(red: 0.51, green: 0.28, blue: 0.9), Color(red: 0.83, green: 0.2, blue: 1.0)],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
+                                .background(Color(red: 0.035, green: 0.039, blue: 0.039))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
                                 )
-                                .cornerRadius(12)
-                                .shadow(color: Color(red: 0.51, green: 0.28, blue: 0.9).opacity(0.3), radius: 8, x: 0, y: 4)
+                                .cornerRadius(16)
+                                //.padding(.horizontal, 16)
+                            }
+                            .padding(.bottom, 100) // Add bottom padding so content can scroll under button
+                        } else {
+                            // Add padding when no photos to maintain consistent spacing
+                            Spacer()
+                                .frame(height: 100)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.top, 16)
-                        .padding(.bottom, 32)
                     }
                 }
+                .overlay(
+                    // Upload Button - Floating at bottom
+                    VStack {
+                        Spacer()
+                        VStack(spacing: 0) {
+                            Divider()
+                                .background(Color.white.opacity(0.1))
+                            
+                            Button(action: {
+                                if !viewModel.selectedPhotos.isEmpty {
+                                    // Continue with generation
+                                    handleContinue()
+                                } else {
+                                    showPhotoSourceSheet = true
+                                }
+                            }) {
+                                Text(viewModel.selectedPhotos.isEmpty ? "Upload 4 photos" : "Continue")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundColor(.black)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 56)
+                                    .background(Color.white)
+                                    .cornerRadius(12)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.top, 16)
+                            .padding(.bottom, 20)
+                        }
+                        .background(Color.clear)
+                    }
+                    .allowsHitTesting(true)
+                )
             }
         }
-        .sheet(isPresented: $showPhotoSourceSheet) {
-            PhotoSourceSheet(
-                onCamera: {
-                    showPhotoSourceSheet = false
-                    if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                        showCamera = true
-                    } else {
-                        viewModel.showToast(message: "Camera not available on this device", type: .error)
-                    }
-                },
-                onLibrary: {
-                    showPhotoSourceSheet = false
-                    showPhotoPicker = true
+        .overlay(
+            Group {
+                if showPhotoSourceSheet {
+                    PhotoSourceSheet(
+                        onCamera: {
+                            showPhotoSourceSheet = false
+                            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                                showCamera = true
+                            } else {
+                                viewModel.showToast(message: "Camera not available on this device", type: .error)
+                            }
+                        },
+                        onLibrary: {
+                            showPhotoSourceSheet = false
+                            showPhotoPicker = true
+                        },
+                        onDismiss: {
+                            showPhotoSourceSheet = false
+                        }
+                    )
+                    .transition(.opacity.combined(with: .scale(scale: 0.9)))
+                    .animation(.easeInOut(duration: 0.2), value: showPhotoSourceSheet)
                 }
-            )
-            .presentationDetents([.height(200)])
-        }
+            }
+        )
         .sheet(isPresented: $showPhotoPicker) {
             PhotoPickerView(
                 selection: $selectedItem,
@@ -332,11 +374,7 @@ struct HomeView: View {
 }
 
 private struct HomeIntroduceImage: View {
-    let onTap: (() -> Void)?
-    
-    init(onTap: (() -> Void)? = nil) {
-        self.onTap = onTap
-    }
+    @State private var isAnimated = false
     
     var body: some View {
         Group {
@@ -345,21 +383,29 @@ private struct HomeIntroduceImage: View {
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: .infinity)
-                    .frame(height: 300)
+                    .frame(height: 450)
+                    .scaleEffect(isAnimated ? 1.0 : 0.95)
+                    .opacity(isAnimated ? 1.0 : 0.0)
+                    .animation(.easeOut(duration: 0.8), value: isAnimated)
+                    .onAppear {
+                        isAnimated = true
+                    }
             } else {
                 Rectangle()
                     .fill(Color.gray.opacity(0.3))
-                    .frame(height: 300)
+                    .frame(height: 450)
                     .overlay(
                         Image(systemName: "photo.on.rectangle.angled")
                             .font(.system(size: 60))
                             .foregroundColor(.white.opacity(0.5))
                     )
+                    .scaleEffect(isAnimated ? 1.0 : 0.95)
+                    .opacity(isAnimated ? 1.0 : 0.0)
+                    .animation(.easeOut(duration: 0.8), value: isAnimated)
+                    .onAppear {
+                        isAnimated = true
+                    }
             }
-        }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onTap?()
         }
     }
 }
@@ -367,7 +413,6 @@ private struct HomeIntroduceImage: View {
 struct PhotoThumbnailView: View {
     let photo: SelectedPhoto
     let onDelete: () -> Void
-    @State private var showDelete = false
     
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -388,18 +433,14 @@ struct PhotoThumbnailView: View {
                     .aspectRatio(1, contentMode: .fit)
             }
             
-            if showDelete {
-                Button(action: onDelete) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.white)
-                        .background(Color.black.opacity(0.5))
-                        .clipShape(Circle())
-                }
-                .padding(4)
+            // Delete button always visible
+            Button(action: onDelete) {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundColor(.white)
+                    .background(Color.black.opacity(0.5))
+                    .clipShape(Circle())
             }
-        }
-        .onTapGesture {
-            showDelete.toggle()
+            .padding(4)
         }
     }
 }
@@ -407,47 +448,65 @@ struct PhotoThumbnailView: View {
 struct PhotoSourceSheet: View {
     let onCamera: () -> Void
     let onLibrary: () -> Void
+    let onDismiss: () -> Void
     
     var body: some View {
-        VStack(spacing: 16) {
-            Text("Take photo from")
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.white)
-                .padding(.top, 20)
+        ZStack {
+            // Background overlay
+            Color.black.opacity(0.5)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    onDismiss()
+                }
             
-            VStack(spacing: 12) {
-                Button(action: onCamera) {
-                    HStack {
-                        Image(systemName: "camera")
-                            .font(.system(size: 18))
-                        Text("Camera")
-                            .font(.system(size: 16, weight: .medium))
-                    }
-                    .foregroundColor(.white)
+            // Content card
+            VStack(spacing: 0) {
+                // Title - Centered
+                Text("Take photo from")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.black)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(Color(red: 0.098, green: 0.098, blue: 0.098))
-                    .cornerRadius(12)
-                }
+                    .padding(.top, 28)
+                    .padding(.bottom, 24)
                 
-                Button(action: onLibrary) {
-                    HStack {
-                        Image(systemName: "photo.on.rectangle")
-                            .font(.system(size: 18))
-                        Text("Photo library")
-                            .font(.system(size: 16, weight: .medium))
+                // Buttons - Side by side
+                HStack(spacing: 12) {
+                    Button(action: onCamera) {
+                        Text("Camera")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(.black)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                            )
+                            .cornerRadius(12)
                     }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(Color(red: 0.098, green: 0.098, blue: 0.098))
-                    .cornerRadius(12)
+                    
+                    Button(action: onLibrary) {
+                        Text("Photo library")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(.black)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                            )
+                            .cornerRadius(12)
+                    }
                 }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 28)
             }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 20)
+            .frame(width: 320)
+            .background(Color.white)
+            .cornerRadius(20)
+            .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 10)
         }
-        .background(Color.black)
     }
 }
 

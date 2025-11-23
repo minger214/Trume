@@ -19,6 +19,7 @@ struct PortfolioGeneratingView: View {
     @State private var lastProgressUpdate: Date = Date()
     @State private var generationFailed: Bool = false
     @State private var failureMessage: String?
+    @State private var selectedProject: Project?
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
@@ -37,16 +38,17 @@ struct PortfolioGeneratingView: View {
     private func log(_ message: String) {
         print("\(Self.logPrefix) \(message)")
     }
+
+    private let backgroundColor = Color(red: 0.035, green: 0.039, blue: 0.039)
     
     var body: some View {
         ZStack {
-            Color.black
-                .ignoresSafeArea()
+            backgroundColor.ignoresSafeArea().ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Navigation Bar
                 NavigationBar(
-                    title: "Generated Projects",
+                    title: "Projects",
                     showBackButton: true,
                     onBack: {
                         presentationMode.wrappedValue.dismiss()
@@ -131,39 +133,67 @@ struct PortfolioGeneratingView: View {
                                 let columnCount = max(1, min(3, projects.count))
                                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: columnCount), spacing: 12) {
                                     ForEach(projects) { project in
-                                        VStack(spacing: 8) {
-                                            AsyncImage(url: URL(string: project.imageUrl)) { image in
-                                                image
-                                                    .resizable()
-                                                    .scaledToFill()
-                                            } placeholder: {
-                                                Rectangle().fill(Color.gray.opacity(0.3))
-                                            }
-                                            .aspectRatio(3/4, contentMode: .fit)
-                                            .clipped()
-                                            .cornerRadius(12)
-                                            .overlay(
-                                                LinearGradient(colors: [.clear, .black.opacity(0.7)], startPoint: .top, endPoint: .bottom)
-                                                    .cornerRadius(12)
-                                            )
-                                            .overlay(
-                                                Text(project.status == .completed ? project.style.name : "Processing...")
-                                                    .font(.system(size: 11, weight: .medium))
-                                                    .foregroundColor(.white)
-                                                    .padding(.bottom, 6)
-                                                , alignment: .bottom
-                                            )
-                                            
-                                            // Individual progress bar for each project
-                                            VStack(spacing: 4) {
-                                                ProgressView(value: project.progress, total: 1.0)
-                                                    .progressViewStyle(CustomProgressViewStyle())
+                                        GeometryReader { geometry in
+                                            ZStack {
+                                                AsyncImage(url: URL(string: project.imageUrl)) { image in
+                                                    image
+                                                        .resizable()
+                                                        .scaledToFill()
+                                                } placeholder: {
+                                                    ZStack {
+                                                        Rectangle().fill(Color.gray.opacity(0.3))
+                                                        
+                                                        // AppIcon background with 0.2 opacity
+                                                        if let appIcon = UIImage(named: "logo") {
+                                                            Image(uiImage: appIcon)
+                                                                .resizable()
+                                                                .scaledToFit()
+                                                                .opacity(0.2)
+                                                        }
+                                                    }
+                                                }
+                                                .aspectRatio(3/4, contentMode: .fit)
+                                                .clipped()
+                                                .cornerRadius(12)
+                                                .overlay(
+                                                    LinearGradient(colors: [.clear, .black.opacity(0.7)], startPoint: .top, endPoint: .bottom)
+                                                        .cornerRadius(12)
+                                                )
                                                 
-                                                Text(project.status == .completed ? "Completed" : "\(Int(project.progress * 100))%")
-                                                    .font(.system(size: 10))
-                                                    .foregroundColor(project.status == .completed ? Color(red: 0.2, green: 0.78, blue: 0.35) : .white)
+                                                // Progress bar or magnifying glass icon in center
+                                                if project.status == .completed {
+                                                    Image(systemName: "magnifyingglass")
+                                                        .font(.system(size: 32))
+                                                        .foregroundColor(.white)
+                                                        .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
+                                                } else {
+                                                    VStack(spacing: 8) {
+                                                        ProgressView(value: project.progress, total: 1.0)
+                                                            .progressViewStyle(CustomProgressViewStyle())
+                                                            .frame(width: geometry.size.width * 0.9)
+                                                        
+                                                        Text("\(Int(project.progress * 100))%")
+                                                            .font(.system(size: 12, weight: .semibold))
+                                                            .foregroundColor(.white)
+                                                            .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
+                                                    }
+                                                }
+                                                
+                                                // Estimated time or completion time at bottom of image area
+                                                VStack {
+                                                    Spacer()
+                                                    Text(project.status == .completed ? formatProjectDate(project.createdAt) : formatEstimatedTime(estimatedTime))
+                                                        .font(.system(size: 11))
+                                                        .foregroundColor(project.status == .completed ? Color.white.opacity(0.7) : Color.white.opacity(0.6))
+                                                        .padding(.bottom, 8)
+                                                }
                                             }
-                                            .padding(.horizontal, 4)
+                                        }
+                                        .aspectRatio(3/4, contentMode: .fit)
+                                        .onTapGesture {
+                                            if project.status == .completed {
+                                                selectedProject = project
+                                            }
                                         }
                                     }
                                 }
@@ -173,38 +203,6 @@ struct PortfolioGeneratingView: View {
                         }
                     }
                     
-                    // Save Button
-                    Button(action: {
-                        saveSessionToLibrary()
-                    }) {
-                        HStack {
-                            Spacer()
-                            Text("Save Projects")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.white)
-                            Spacer()
-                        }
-                        .frame(height: 50)
-                        .background(
-                            Group {
-                                if canSave {
-                                    LinearGradient(
-                                        colors: [Color(red: 0.51, green: 0.28, blue: 0.9), Color(red: 0.83, green: 0.2, blue: 1.0)],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                } else {
-                                    Color(red: 0.098, green: 0.098, blue: 0.098)
-                                }
-                            }
-                        )
-                        .cornerRadius(12)
-                    }
-                    .disabled(!canSave)
-                    .opacity(canSave ? 1.0 : 0.6)
-                    .contentShape(Rectangle())
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 20)
                 }
             }
         }
@@ -222,13 +220,16 @@ struct PortfolioGeneratingView: View {
         .onReceive(timer) { _ in
             updateProgress()
         }
+        .fullScreenCover(item: $selectedProject) { project in
+            PictureWorksView(project: project, viewModel: viewModel)
+        }
     }
     
     private func startGeneration() {
         log("startGeneration triggered.")
         let initialProgress = viewModel.generationProgress
         progress = initialProgress
-        estimatedTime = 60 // 增加预估时间，因为API调用需要更长时间
+        estimatedTime = 360 // 360 seconds = 6 minutes
         simulatedProgress = initialProgress
         lastProgressUpdate = Date()
         viewModel.generationProgress = initialProgress
@@ -463,6 +464,8 @@ struct PortfolioGeneratingView: View {
             log("All projects marked completed.")
             estimatedTime = 0
             progress = updateProgressSafely(to: 1.0, reason: "Projects finalized")
+            // 确保生成状态设置为完成
+            viewModel.markGenerationCompleted()
             return
         }
         
@@ -470,13 +473,13 @@ struct PortfolioGeneratingView: View {
         var updatedProjects = viewModel.currentSessionProjects
         let project = updatedProjects[index]
         
-        // 更新当前项目
+        // 更新当前项目，使用当前时间作为完成时间
         updatedProjects[index] = Project(
             id: project.id,
             imageUrl: imageUrl,
             style: project.style,
             status: .completed,
-            createdAt: project.createdAt,
+            createdAt: Date(), // 使用当前时间作为完成时间
             progress: 1.0
         )
         log("Project updated at index=\(index). progress=\(index + 1)/\(imageUrls.count)")
@@ -510,6 +513,8 @@ struct PortfolioGeneratingView: View {
         if allCompleted {
             progress = updateProgressSafely(to: 1.0, reason: "All projects completed")
             estimatedTime = 0
+            // 确保生成状态设置为完成
+            viewModel.markGenerationCompleted()
             return
         }
         
@@ -553,6 +558,22 @@ struct PortfolioGeneratingView: View {
             self.log("Setting shouldShowPortfolio flag to true.")
             viewModel.shouldShowPortfolio = true
         }
+    }
+    
+    // MARK: - Helper Functions
+    
+    private func formatEstimatedTime(_ seconds: Int) -> String {
+        let minutes = seconds / 60
+        if minutes <= 0 {
+            return "Estimated 1 minute"
+        }
+        return "Estimated \(minutes) \(minutes == 1 ? "minute" : "minutes")"
+    }
+    
+    private func formatProjectDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yy.MM.dd HH:mm"
+        return formatter.string(from: date)
     }
 }
 

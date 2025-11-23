@@ -111,13 +111,13 @@ struct PictureWorksView: View {
         VStack(spacing: 0) {
             HStack(spacing: 16) {
                 actionButton(
-                    icon: "square.and.arrow.down",
+                    icon: "arrow.down.circle",
                     title: "Save",
                     action: saveImage
                 )
                 
                 actionButton(
-                    icon: "square.and.arrow.up",
+                    icon: "arrowshape.turn.up.right",
                     title: "Share",
                     action: shareImage
                 )
@@ -161,7 +161,10 @@ struct PictureWorksView: View {
             .frame(height: 48)
             .background(
                 LinearGradient(
-                    colors: gradientColors,
+                    colors: [
+                        Color(red: 0.18, green: 0.18, blue: 0.18),
+                        Color(red: 0.098, green: 0.098, blue: 0.098)
+                    ],
                     startPoint: .leading,
                     endPoint: .trailing
                 )

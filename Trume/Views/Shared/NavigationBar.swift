@@ -52,10 +52,10 @@ struct NavigationBar: View {
             }
             .frame(width: trailingButtons.isEmpty ? 44 : nil, height: 44)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        // .padding(.horizontal, 16)
+        // .padding(.vertical, 12)
         .background(
-            Color.black.opacity(0.9)
+            Color.black.opacity(1.0)
         )
     }
 }

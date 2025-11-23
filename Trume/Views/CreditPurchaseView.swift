@@ -10,6 +10,7 @@ import SwiftUI
 struct CreditPurchaseView: View {
     @ObservedObject var viewModel: AppViewModel
     @State private var selectedPackage: CreditPackage = .package2000
+    @State private var showPurchase: Bool = false
     @Environment(\.presentationMode) var presentationMode
     
     enum CreditPackage: CaseIterable {
@@ -34,89 +35,104 @@ struct CreditPurchaseView: View {
         }
     }
     
+    private let backgroundColor = Color(red: 0.035, green: 0.039, blue: 0.039)
+
     var body: some View {
         ZStack {
-            Color(red: 0.035, green: 0.039, blue: 0.039)
-                .ignoresSafeArea()
+            backgroundColor.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Navigation Bar
                 NavigationBar(
-                    title: "Purchase Credits",
-                    showBackButton: true,
-                    onBack: {
-                        presentationMode.wrappedValue.dismiss()
+                    title: "",
+                    showBackButton: false
+                )
+                .overlay(
+                    HStack {
+                        Button(action: {
+                            presentationMode.wrappedValue.dismiss()
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.black)
+                                .background(Color.white.opacity(0.5))
+                                .clipShape(Circle())
+                        }
+                        .padding(.leading, 16)
+                        Spacer()
                     }
                 )
                 
-                ScrollView {
-                    VStack(spacing: 24) {
-                        // Header
-                        VStack(spacing: 8) {
-                            Text("Need more credits?")
-                                .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.white)
-                            
-                            Text("Pick an option to keep enjoying our app.")
-                                .font(.system(size: 14))
-                                .foregroundColor(Color.white.opacity(0.6))
-                                .multilineTextAlignment(.center)
-                        }
-                        .padding(.top, 32)
-                        .padding(.horizontal, 16)
+                VStack(spacing: 24) {
+                    // Header
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Need more credits?")
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         
-                        // Credit Packages
-                        VStack(spacing: 12) {
-                            ForEach(CreditPackage.allCases, id: \.self) { package in
-                                CreditPackageCard(
-                                    package: package,
-                                    isSelected: selectedPackage == package
-                                ) {
-                                    selectedPackage = package
-                                    viewModel.showToast(
-                                        message: "Selected \(package.credits) credits",
-                                        type: .info
-                                    )
-                                }
+                        Text("Pick an option to keep enjoying our app.")
+                            .font(.system(size: 14))
+                            .foregroundColor(Color.white.opacity(0.5))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(.top, 32)
+                    .padding(.horizontal, 16)
+                    
+                    // Credit Packages
+                    VStack(spacing: 12) {
+                        ForEach(CreditPackage.allCases, id: \.self) { package in
+                            CreditPackageCard(
+                                package: package,
+                                isSelected: selectedPackage == package
+                            ) {
+                                selectedPackage = package
+                                viewModel.showToast(
+                                    message: "Selected \(package.credits) credits",
+                                    type: .info
+                                )
                             }
                         }
-                        .padding(.horizontal, 16)
-                        
-                        // Notice
-                        Text("Credits add to your balance and never expire.")
-                            .font(.system(size: 12))
+                    }
+                    .padding(.horizontal, 16)
+                    
+                    // Purchase Button
+                    Button(action: {
+                        handlePurchase()
+                    }) {
+                        Text("Add Credits")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.black)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(Color.white)
+                            .cornerRadius(12)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+
+                    // Notice
+                    Text("Easy to cancel.")
+                        .font(.system(size: 18))
+                        .foregroundColor(Color.white.opacity(0.5))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 32)
+                    
+                    // Terms Link
+                    HStack(spacing: 16) {
+                        Link("Privacy Policy", destination: URL(string: "https://example.com/privacy")!)
+                            .font(.system(size: 14))
                             .foregroundColor(Color.white.opacity(0.5))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 32)
                         
-                        // Terms Link
+                        Text(" ")
+                            .foregroundColor(.white.opacity(0.3))
+                        
                         Link("Terms of Use", destination: URL(string: "https://example.com/terms")!)
                             .font(.system(size: 14))
-                            .foregroundColor(Color(red: 0.51, green: 0.28, blue: 0.9))
-                            .padding(.top, 8)
-                        
-                        // Purchase Button
-                        Button(action: {
-                            handlePurchase()
-                        }) {
-                            Text("Add \(selectedPackage.credits) Credits")
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 56)
-                                .background(
-                                    LinearGradient(
-                                        colors: [Color(red: 0.51, green: 0.28, blue: 0.9), Color(red: 0.83, green: 0.2, blue: 1.0)],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                                .cornerRadius(12)
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.top, 24)
-                        .padding(.bottom, 32)
+                            .foregroundColor(Color.white.opacity(0.5))
                     }
+                    .padding(.top, 16)
+                    
+                    Spacer()
                 }
             }
         }
@@ -152,27 +168,37 @@ struct CreditPackageCard: View {
     var body: some View {
         Button(action: action) {
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 8) {
+                    ZStack {
+                        if isSelected {
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: 24, height: 24)
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(.black)
+                        } else {
+                            Circle()
+                                .stroke(Color.white.opacity(0.3), lineWidth: 2)
+                                .frame(width: 24, height: 24)
+                        }
+                    }
                     Text("\(package.credits) Credits")
                         .font(.system(size: 18, weight: .bold))
                         .foregroundColor(.white)
-                    
-                    Text(package.price)
-                        .font(.system(size: 14))
-                        .foregroundColor(Color.white.opacity(0.6))
                 }
-                
+
                 Spacer()
                 
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 24))
-                    .foregroundColor(isSelected ? Color(red: 0.51, green: 0.28, blue: 0.9) : Color.white.opacity(0.3))
+                Text(package.price)
+                    .font(.system(size: 14))
+                    .foregroundColor(Color.white.opacity(0.6))
             }
             .padding(16)
             .background(Color(red: 0.098, green: 0.098, blue: 0.098))
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? Color(red: 0.51, green: 0.28, blue: 0.9) : Color.clear, lineWidth: 2)
+                    .stroke(isSelected ? Color.white : Color.clear, lineWidth: 2)
             )
             .cornerRadius(12)
         }

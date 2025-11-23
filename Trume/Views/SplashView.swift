@@ -24,7 +24,7 @@ struct SplashView: View {
                     .resizable()
                     .renderingMode(.original)
                     .scaledToFit()
-                    .frame(width: 260, height: 260)
+                    .frame(width: 160, height: 160)
                     .scaleEffect(scale)
                     .opacity(opacity)
                 
@@ -43,7 +43,7 @@ struct SplashView: View {
                 scale = 1.0
             }
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                 withAnimation {
                     showSplash = false
                 }

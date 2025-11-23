@@ -35,11 +35,12 @@ struct SubscriptionView: View {
     var hasAvailablePlans: Bool {
         viewModel.featureConfig.subscriptionPage.showBasicPlan || viewModel.featureConfig.subscriptionPage.showPremiumPlan
     }
+
+    private let backgroundColor = Color(red: 0.035, green: 0.039, blue: 0.039)
     
     var body: some View {
         ZStack {
-            Color(red: 0.035, green: 0.039, blue: 0.039)
-                .ignoresSafeArea()
+            backgroundColor.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Navigation Bar
@@ -120,18 +121,16 @@ struct SubscriptionView: View {
                         HStack(spacing: 16) {
                             Link("Privacy Policy", destination: URL(string: "https://example.com/privacy")!)
                                 .font(.system(size: 14))
-                                .foregroundColor(Color(red: 0.51, green: 0.28, blue: 0.9))
+                                .foregroundColor(Color.white.opacity(0.5))
                             
-                            Text("•")
+                            Text(" ")
                                 .foregroundColor(.white.opacity(0.3))
                             
                             Link("Terms of Use", destination: URL(string: "https://example.com/terms")!)
                                 .font(.system(size: 14))
-                                .foregroundColor(Color(red: 0.51, green: 0.28, blue: 0.9))
+                                .foregroundColor(Color.white.opacity(0.5))
                         }
                         .padding(.top, 16)
-
-                        
                         
                         // Continue Button
                         Button(action: {
