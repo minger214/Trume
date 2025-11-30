@@ -36,6 +36,7 @@ struct FeatureConfiguration: Codable {
         var showBasicPlan: Bool = true
         var showPremiumPlan: Bool = false
         var enablePaymentProcessing: Bool = true
+        var showRestorePurchasesButton: Bool = false
     }
     
     var homePage: HomePageConfig = HomePageConfig()

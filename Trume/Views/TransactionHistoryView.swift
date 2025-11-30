@@ -40,10 +40,11 @@ struct TransactionHistoryView: View {
                 // Navigation Bar
                 NavigationBar(
                     title: "Transaction History",
-                    showBackButton: true,
-                    onBack: {
-                        presentationMode.wrappedValue.dismiss()
-                    }
+                    leadingButtons: [
+                        NavigationBarButton.back {
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                    ]
                 )
                 
                 ScrollView {

@@ -1,0 +1,120 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "8E31CAFF",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "19.99",
+      "familyShareable" : false,
+      "internalID" : "E4BEB493",
+      "localizations" : [
+        {
+          "description" : "Purchase 2000 credits to generate more AI portraits",
+          "displayName" : "2000 Credits",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.trume.credits.2000",
+      "referenceName" : "2000 Credits",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "39.99",
+      "familyShareable" : false,
+      "internalID" : "FAF3C56B",
+      "localizations" : [
+        {
+          "description" : "Purchase 5000 credits to generate more AI portraits",
+          "displayName" : "5000 Credits",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.trume.credits.5000",
+      "referenceName" : "5000 Credits",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "59.99",
+      "familyShareable" : false,
+      "internalID" : "F5A49D33",
+      "localizations" : [
+        {
+          "description" : "Purchase 10000 credits to generate more AI portraits",
+          "displayName" : "10000 Credits",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.trume.credits.10000",
+      "referenceName" : "10000 Credits",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_disableDialogs" : false,
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ],
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "7CA33D2C",
+      "localizations" : [
+
+      ],
+      "name" : "Trume Weekly",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "4.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "75983A1E",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Basic subscription plan with 500 credits per week",
+              "displayName" : "Basic Plan - Weekly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.trume.plan.weekly.basic",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "Basic Plan",
+          "subscriptionGroupID" : "7CA33D2C",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

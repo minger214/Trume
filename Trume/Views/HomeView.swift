@@ -24,18 +24,19 @@ struct HomeView: View {
     @State private var showSettingsView = false
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.dismiss) var dismiss
+
+    private let backgroundColor = Color(red: 0.035, green: 0.039, blue: 0.039)
     
     var body: some View {
         ZStack {
-            Color(red: 0.035, green: 0.039, blue: 0.039)
-                .ignoresSafeArea()
+            backgroundColor.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Navigation Bar
                 NavigationBar(
                     title: "Trume",
-                    trailingButtons: buildTrailingButtons(),
-                    onBack: nil
+                    // leadingButtons: buildLeadingButtons(),
+                    trailingButtons: buildTrailingButtons()
                 )
                 .overlay(
                     HStack {
@@ -74,11 +75,11 @@ struct HomeView: View {
                                     .padding(.vertical, 5)
                                     .background(
                                         Capsule()
-                                            .fill(Color.gray)
+                                            .fill(Color.white.opacity(0.2))
                                     )
                             }
                         }
-                        .padding(.leading, 16)
+                        .padding(.leading, 20)
                         Spacer()
                     }
                 )
@@ -153,9 +154,18 @@ struct HomeView: View {
                                         .stroke(Color.white.opacity(0.2), lineWidth: 1)
                                 )
                                 .cornerRadius(16)
-                                //.padding(.horizontal, 16)
+                                .padding(.horizontal, 16)
+                            }
+                            
+                            // Tapping Continue Introduction
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text("By tapping “Continue”,you declare that you have all necessary rights and permissions to share these images with us and that you will use the photos generated lawfully.")
+                                     .font(.system(size: 15))
+                                     .foregroundColor(.white)
+                                     .padding(.horizontal, 16)
                             }
                             .padding(.bottom, 100) // Add bottom padding so content can scroll under button
+                        
                         } else {
                             // Add padding when no photos to maintain consistent spacing
                             Spacer()
@@ -236,6 +246,7 @@ struct HomeView: View {
                 },
                 maxSelection: viewModel.featureConfig.homePage.maxPhotoSelectionCount
             )
+            .presentationBackground(Color(red: 0.035, green: 0.039, blue: 0.039))
         }
         .fullScreenCover(isPresented: $showCamera) {
             CameraView { image in
@@ -255,6 +266,7 @@ struct HomeView: View {
                     .navigationBarTitleDisplayMode(.inline)
                     #endif
             }
+            .presentationBackground(Color(red: 0.035, green: 0.039, blue: 0.039))
         }
         .sheet(isPresented: $showSubscriptionView) {
             NavigationView {
@@ -263,6 +275,7 @@ struct HomeView: View {
                     .navigationBarTitleDisplayMode(.inline)
                     #endif
             }
+            .presentationBackground(Color(red: 0.035, green: 0.039, blue: 0.039))
         }
         .sheet(isPresented: $showCreditPurchaseView) {
             NavigationView {
@@ -271,6 +284,7 @@ struct HomeView: View {
                     .navigationBarTitleDisplayMode(.inline)
                     #endif
             }
+            .presentationBackground(Color(red: 0.035, green: 0.039, blue: 0.039))
         }
         .fullScreenCover(isPresented: $showPortfolioGeneratingView) {
             PortfolioGeneratingView(viewModel: viewModel)
@@ -282,6 +296,7 @@ struct HomeView: View {
                     .navigationBarTitleDisplayMode(.inline)
                     #endif
             }
+            .presentationBackground(Color.black)
         }
         .onChange(of: viewModel.shouldShowPortfolio) { oldValue, newValue in
             if newValue {
@@ -296,6 +311,7 @@ struct HomeView: View {
                     .navigationBarTitleDisplayMode(.inline)
                     #endif
             }
+            .presentationBackground(Color(red: 0.035, green: 0.039, blue: 0.039))
         }
         .sheet(isPresented: $showSettingsView) {
             NavigationView {
@@ -304,7 +320,55 @@ struct HomeView: View {
                     .navigationBarTitleDisplayMode(.inline)
                     #endif
             }
+            .presentationBackground(Color(red: 0.035, green: 0.039, blue: 0.039))
         }
+    }
+    
+    private func buildLeadingButtons() -> [NavigationBarButton] {
+        return [
+            NavigationBarButton.customView(id: "credits") {
+                Group {
+                    if viewModel.userData.isActiveMember {
+                        // 活跃用户：显示图标和积分
+                        HStack(spacing: 5) {
+                            Image(systemName: "circle.circle.fill")
+                                .font(.system(size: 13))
+                                .foregroundColor(.white)
+                            Text("\(viewModel.userData.credits.totalCredits)")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.white)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            Capsule()
+                                .fill(Color.gray)
+                        )
+                    } else {
+                        // 非活跃用户：只显示斜体 PRO
+                        Text("PRO")
+                            .font(.system(size: 12, weight: .semibold))
+                            .italic()
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(
+                                Capsule()
+                                    .fill(Color.white.opacity(0.2))
+                            )
+                    }
+                }
+                .padding(.leading, 20)
+            } action: {
+                if viewModel.userData.isActiveMember {
+                    // 活跃会员：打开积分页面
+                    showCreditsView = true
+                } else {
+                    // 非活跃会员：打开订阅页面
+                    showSubscriptionView = true
+                }
+            }
+        ]
     }
     
     private func buildTrailingButtons() -> [NavigationBarButton] {
@@ -316,11 +380,11 @@ struct HomeView: View {
             })
         }
         
-        //if viewModel.featureConfig.homePage.showSettingsButton {
+        if viewModel.featureConfig.homePage.showSettingsButton {
             buttons.append(NavigationBarButton(id: "settings", icon: "gearshape") {
                 showSettingsView = true
             })
-        //}
+        }
         
         return buttons
     }
@@ -342,6 +406,15 @@ struct HomeView: View {
                 showCreditPurchaseView = true
             }
             return
+        }
+        
+        // 如果生成已完成，清空之前的项目以开始新的生成
+        if !viewModel.isGenerationInProgress && !viewModel.currentSessionProjects.isEmpty {
+            let allCompleted = viewModel.currentSessionProjects.allSatisfy { $0.status == .completed }
+            if allCompleted {
+                viewModel.currentSessionProjects = []
+                viewModel.saveCurrentSessionProjects()
+            }
         }
         
         if viewModel.isGenerationInProgress {
@@ -436,8 +509,8 @@ struct PhotoThumbnailView: View {
             // Delete button always visible
             Button(action: onDelete) {
                 Image(systemName: "xmark.circle.fill")
-                    .foregroundColor(.white)
-                    .background(Color.black.opacity(0.5))
+                    .foregroundColor(Color.gray.opacity(0.8))
+                    .background(Color.white.opacity(0.8))
                     .clipShape(Circle())
             }
             .padding(4)
@@ -455,57 +528,71 @@ struct PhotoSourceSheet: View {
             // Background overlay
             Color.black.opacity(0.5)
                 .ignoresSafeArea()
-                .onTapGesture {
-                    onDismiss()
-                }
             
-            // Content card
-            VStack(spacing: 0) {
-                // Title - Centered
-                Text("Take photo from")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.black)
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 28)
-                    .padding(.bottom, 24)
-                
-                // Buttons - Side by side
-                HStack(spacing: 12) {
-                    Button(action: onCamera) {
-                        Text("Camera")
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(.black)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(Color.white)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.gray.opacity(0.5), lineWidth: 1)
-                            )
-                            .cornerRadius(12)
-                    }
+            // Content card with close button
+            ZStack(alignment: .topTrailing) {
+                // Content card
+                VStack(spacing: 0) {
+                    // Title - Centered
+                    Text("Take photo from")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.black)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 28)
+                        .padding(.bottom, 24)
                     
-                    Button(action: onLibrary) {
-                        Text("Photo library")
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(.black)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(Color.white)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.gray.opacity(0.5), lineWidth: 1)
-                            )
-                            .cornerRadius(12)
+                    // Buttons - Side by side
+                    HStack(spacing: 12) {
+                        Button(action: onCamera) {
+                            Text("Camera")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundColor(.black)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(Color.white)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                                )
+                                .cornerRadius(12)
+                        }
+                        
+                        Button(action: onLibrary) {
+                            Text("Photo library")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundColor(.black)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(Color.white)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                                )
+                                .cornerRadius(12)
+                        }
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 28)
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 28)
+                .frame(width: 320)
+                .background(Color.white)
+                .cornerRadius(20)
+                .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 10)
+                
+                // Close button - positioned at top right corner of the card
+                Button(action: onDismiss) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.white.opacity(0.2))
+                            .frame(width: 28, height: 28)
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white)
+                    }
+                    .frame(width:28, height: 28)
+                }
+                .offset(x: 12, y: -40)
             }
-            .frame(width: 320)
-            .background(Color.white)
-            .cornerRadius(20)
-            .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 10)
         }
     }
 }

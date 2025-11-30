@@ -49,10 +49,11 @@ struct PortfolioGeneratingView: View {
                 // Navigation Bar
                 NavigationBar(
                     title: "Projects",
-                    showBackButton: true,
-                    onBack: {
-                        presentationMode.wrappedValue.dismiss()
-                    }
+                    leadingButtons: [
+                        NavigationBarButton.back {
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                    ]
                 )
                 
                 VStack(spacing: 0) {
@@ -141,14 +142,13 @@ struct PortfolioGeneratingView: View {
                                                         .scaledToFill()
                                                 } placeholder: {
                                                     ZStack {
-                                                        Rectangle().fill(Color.gray.opacity(0.3))
-                                                        
-                                                        // AppIcon background with 0.2 opacity
-                                                        if let appIcon = UIImage(named: "logo") {
-                                                            Image(uiImage: appIcon)
+                                                        if let bgImage = UIImage(named: "project-bg") {
+                                                            Image(uiImage: bgImage)
                                                                 .resizable()
-                                                                .scaledToFit()
+                                                                .scaledToFill()
                                                                 .opacity(0.2)
+                                                        } else {
+                                                            Rectangle().fill(Color.gray.opacity(0.2))
                                                         }
                                                     }
                                                 }
@@ -184,7 +184,7 @@ struct PortfolioGeneratingView: View {
                                                     Spacer()
                                                     Text(project.status == .completed ? formatProjectDate(project.createdAt) : formatEstimatedTime(estimatedTime))
                                                         .font(.system(size: 11))
-                                                        .foregroundColor(project.status == .completed ? Color.white.opacity(0.7) : Color.white.opacity(0.6))
+                                                        .foregroundColor(project.status == .completed ? Color.white.opacity(0.9) : Color.white.opacity(0.9))
                                                         .padding(.bottom, 8)
                                                 }
                                             }
@@ -250,9 +250,18 @@ struct PortfolioGeneratingView: View {
                 log("Resuming existing generation session. progress=\(Int(progress * 100))%")
                 return
             } else {
-                progress = updateProgressSafely(to: 1.0, reason: "Existing session already completed")
-                log("Existing generation session already completed.")
-                return
+                // 如果所有项目都已完成，清空它们以开始新的生成
+                let allCompleted = viewModel.currentSessionProjects.allSatisfy { $0.status == .completed }
+                if allCompleted {
+                    log("Existing session already completed. Clearing projects for new generation.")
+                    viewModel.currentSessionProjects = []
+                    viewModel.saveCurrentSessionProjects()
+                    // 继续执行，创建新的项目
+                } else {
+                    progress = updateProgressSafely(to: 1.0, reason: "Existing session already completed")
+                    log("Existing generation session already completed.")
+                    return
+                }
             }
         }
         
@@ -589,7 +598,10 @@ struct CustomProgressViewStyle: ProgressViewStyle {
                 Rectangle()
                     .fill(
                         LinearGradient(
-                            colors: [Color(red: 0.51, green: 0.28, blue: 0.9), Color(red: 0.83, green: 0.2, blue: 1.0)],
+                            colors: [
+                                Color.white,
+                                Color(red: 0.2, green: 0.78, blue: 0.35)
+                            ],
                             startPoint: .leading,
                             endPoint: .trailing
                         )

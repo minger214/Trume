@@ -23,10 +23,11 @@ struct UserCreditsView: View {
                 // Navigation Bar
                 NavigationBar(
                     title: "Plans & Credits",
-                    showBackButton: true,
-                    onBack: {
-                        presentationMode.wrappedValue.dismiss()
-                    }
+                    leadingButtons: [
+                        NavigationBarButton.back {
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                    ]
                 )
                 
                 VStack(alignment: .leading, spacing: 24) {
@@ -120,6 +121,7 @@ struct UserCreditsView: View {
                     .navigationBarTitleDisplayMode(.inline)
                     #endif
             }
+            .presentationBackground(Color(red: 0.035, green: 0.039, blue: 0.039))
         }
         .sheet(isPresented: $showSubscription) {
             NavigationView {
@@ -128,6 +130,7 @@ struct UserCreditsView: View {
                     .navigationBarTitleDisplayMode(.inline)
                     #endif
             }
+            .presentationBackground(Color(red: 0.035, green: 0.039, blue: 0.039))
         }
 
     }

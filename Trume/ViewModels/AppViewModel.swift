@@ -34,6 +34,7 @@ class AppViewModel: ObservableObject {
     
     private let userDefaults = UserDefaults.standard
     let faceChainService = FaceChainAPIService()
+    private var notificationObservers: [NSObjectProtocol] = []
     
     private let presetTemplatesKey = "trume.preset.templates"
     private let customTemplatesKey = "trume.custom.templates"
@@ -55,6 +56,13 @@ class AppViewModel: ObservableObject {
         loadCurrentSessionProjects()
         loadTemplateLibrary()
         loadFeatureConfiguration()
+        observeSubscriptionRenewals()
+    }
+    
+    deinit {
+        for observer in notificationObservers {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
     
     // MARK: - User Data
@@ -252,7 +260,7 @@ class AppViewModel: ObservableObject {
                 isDefault: false
             ),
             TemplateItem(
-                name: "Spring Outfit (Male)",
+                name: "Spring Outfit (FeMale)",
                 detail: "Fresh spring styling",
                 category: .preset,
                 styleCode: "m_springflower_female",
@@ -261,7 +269,7 @@ class AppViewModel: ObservableObject {
                 isDefault: false
             ),
             TemplateItem(
-                name: "Summer Outfit (Male)",
+                name: "Summer Outfit (FeMale)",
                 detail: "Breezy summer styling",
                 category: .preset,
                 styleCode: "f_summersport_female",
@@ -270,7 +278,7 @@ class AppViewModel: ObservableObject {
                 isDefault: false
             ),
             TemplateItem(
-                name: "Autumn Outfit (Male)",
+                name: "Autumn Outfit (FeMale)",
                 detail: "Warm autumn styling",
                 category: .preset,
                 styleCode: "f_autumnleaf_female",
@@ -279,7 +287,7 @@ class AppViewModel: ObservableObject {
                 isDefault: false
             ),
             TemplateItem(
-                name: "Winter Outfit (Male)",
+                name: "Winter Outfit (FeMale)",
                 detail: "Cozy winter styling",
                 category: .preset,
                 styleCode: "m_winterchinese_female",
@@ -288,7 +296,7 @@ class AppViewModel: ObservableObject {
                 isDefault: false
             ),
             TemplateItem(
-                name: "Light Portray (Male)",
+                name: "Light Portray (FeMale)",
                 detail: "Light portray style",
                 category: .preset,
                 styleCode: "f_lightportray_female",
@@ -391,11 +399,11 @@ class AppViewModel: ObservableObject {
             if let plan = subscriptionPlan {
                 userData.subscription.plan = plan
             }
-            // 只有在没有提供日期时才设置默认30天
+            // 只有在没有提供日期时才设置默认7天
             if let endDate = subscriptionEndDate {
                 userData.subscription.endDate = endDate
             } else if userData.subscription.endDate == nil {
-                userData.subscription.endDate = Calendar.current.date(byAdding: .day, value: 30, to: Date())
+                userData.subscription.endDate = Calendar.current.date(byAdding: .day, value: 7, to: Date())
             }
         } else {
             userData.credits.rechargeCredits += amount
@@ -603,42 +611,126 @@ class AppViewModel: ObservableObject {
     
     // MARK: - Clear All Data
     func clearAllUserData() {
-        // Reset user data
-        userData = UserData()
-        saveUserData()
-        
-        // Clear projects
-        projects = []
-        saveProjects()
-        
-        // Clear selected photos (including files)
+        // 1. 清理文件系统中的数据（照片和临时文件）
         clearSelectedPhotos()
         
-        // 尝试删除整个照片目录
-        try? FileManager.default.removeItem(at: AppViewModel.photosDirectory)
+        // 删除整个照片目录
+        if FileManager.default.fileExists(atPath: AppViewModel.photosDirectory.path) {
+            try? FileManager.default.removeItem(at: AppViewModel.photosDirectory)
+        }
         
-        // Clear current session projects
+        // 清理临时文件目录中可能遗留的 facechain 相关文件
+        let tempDirectory = FileManager.default.temporaryDirectory
+        if let tempFiles = try? FileManager.default.contentsOfDirectory(at: tempDirectory, includingPropertiesForKeys: nil) {
+            for fileURL in tempFiles {
+                if fileURL.lastPathComponent.hasPrefix("facechain-") && fileURL.pathExtension == "zip" {
+                    try? FileManager.default.removeItem(at: fileURL)
+                }
+            }
+        }
+        
+        // 2. 重置内存中的状态变量
+        userData = UserData()
+        projects = []
+        selectedPhotos = []
         currentSessionProjects = []
-        saveCurrentSessionProjects()
+        presetTemplates = AppViewModel.defaultPresetTemplates()
+        customTemplates = []
+        generationTemplates = []
+        shouldShowPortfolio = false
         isGenerationInProgress = false
         generationProgress = 0.0
         pendingGenerationCredits = nil
         
-        // Reset templates
-        presetTemplates = AppViewModel.defaultPresetTemplates()
-        customTemplates = []
-        saveTemplates(for: .preset)
-        saveTemplates(for: .custom)
+        // 重置功能配置为默认值
+        //featureConfig = .default
         
-        // Remove from UserDefaults
+        // 3. 清除 UserDefaults 中的所有应用数据
+        // 先清除已知的 keys
         userDefaults.removeObject(forKey: "userData")
         userDefaults.removeObject(forKey: "projects")
         userDefaults.removeObject(forKey: "selectedPhotos")
         userDefaults.removeObject(forKey: "currentSessionProjects")
         userDefaults.removeObject(forKey: presetTemplatesKey)
         userDefaults.removeObject(forKey: customTemplatesKey)
+        userDefaults.removeObject(forKey: featureConfigKey)
+        if #available(iOS 15.0, *) {
+            userDefaults.removeObject(forKey: StoreKitManager.processedSubscriptionIDsKey)
+        }
+        
+        // 清除所有以 "trume" 开头的 UserDefaults keys（防止遗漏）
+        let allKeys = Array(UserDefaults.standard.dictionaryRepresentation().keys)
+        for key in allKeys {
+            if key.hasPrefix("trume.") || key.lowercased().hasPrefix("trume") {
+                userDefaults.removeObject(forKey: key)
+            }
+        }
+        
+        // 4. 保存重置后的默认数据到 UserDefaults（确保下次加载时有默认值）
+        saveUserData()
+        saveProjects()
+        saveTemplates(for: .preset)
+        saveTemplates(for: .custom)
+        saveFeatureConfiguration()
+        
+        // 5. 同步 UserDefaults（确保立即生效）
+        userDefaults.synchronize()
         
         showToast(message: "All user data cleared", type: .success)
+    }
+    
+    private func observeSubscriptionRenewals() {
+        let observer = NotificationCenter.default.addObserver(
+            forName: .subscriptionRenewed,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let productID = notification.userInfo?["productID"] as? String else { return }
+            let expirationDate = notification.userInfo?["expirationDate"] as? Date
+            self?.handleSubscriptionRenewal(productID: productID, expirationDate: expirationDate)
+        }
+        notificationObservers.append(observer)
+    }
+    
+    private func handleSubscriptionRenewal(productID: String, expirationDate: Date?) {
+        guard let plan = subscriptionPlan(for: productID) else { return }
+        
+        let endDate = expirationDate ?? Calendar.current.date(byAdding: .day, value: plan.periodDays, to: Date())
+        guard shouldApplySubscriptionReward(plan: plan, newEndDate: endDate) else { return }
+        addCredits(
+            plan.credits,
+            type: .subscription,
+            description: "\(plan.title) Subscription Renewal",
+            subscriptionEndDate: endDate,
+            subscriptionPlan: plan
+        )
+        
+        showToast(message: "\(plan.title) renewed. \(plan.credits) credits added.", type: .success)
+    }
+    
+    private func subscriptionPlan(for productID: String) -> SubscriptionPlan? {
+        switch productID {
+        case "com.trume.plan.weekly.basic":
+            return .basic
+        case "com.trume.plan.weekly.premium":
+            return .premium
+        default:
+            return nil
+        }
+    }
+    
+    func shouldApplySubscriptionReward(plan: SubscriptionPlan, newEndDate: Date?) -> Bool {
+        guard let newEndDate = newEndDate else {
+            return true
+        }
+        
+        if let currentPlan = userData.subscription.plan,
+           let currentEndDate = userData.subscription.endDate,
+           currentPlan == plan,
+           currentEndDate >= newEndDate {
+            return false
+        }
+        return true
     }
     
     // MARK: - Feature Configuration

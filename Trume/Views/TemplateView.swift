@@ -38,10 +38,11 @@ struct TemplateView: View {
             VStack(spacing: 0) {
                 NavigationBar(
                     title: "Templates",
-                    showBackButton: true,
-                    onBack: {
-                        presentationMode.wrappedValue.dismiss()
-                    }
+                    leadingButtons: [
+                        NavigationBarButton.back {
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                    ]
                 )
                 
                 ScrollView(showsIndicators: false) {
@@ -66,13 +67,13 @@ struct TemplateView: View {
             }
         }
         .onAppear { ensureSelection() }
-        .onChange(of: activeCategory) { _ in
+        .onChange(of: activeCategory) {
             ensureSelection()
         }
-        .onChange(of: viewModel.presetTemplates) { _ in
+        .onChange(of: viewModel.presetTemplates) {
             if activeCategory == .preset { ensureSelection() }
         }
-        .onChange(of: viewModel.customTemplates) { _ in
+        .onChange(of: viewModel.customTemplates) {
             if activeCategory == .custom { ensureSelection() }
         }
         .sheet(isPresented: $isShowingEditor) {
@@ -81,6 +82,7 @@ struct TemplateView: View {
                 onDismiss: { isShowingEditor = false },
                 onSave: handleEditorSave
             )
+            .presentationBackground(Color(red: 0.035, green: 0.039, blue: 0.039))
         }
         .alert("Delete Template?", isPresented: $showDeleteAlert) {
             Button("Delete", role: .destructive) {
@@ -573,7 +575,7 @@ private struct TemplateEditorSheet: View {
                     .disabled(state.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
-            .onChange(of: selectedPhotoItem) { newItem in
+            .onChange(of: selectedPhotoItem) { _, newItem in
                 guard let newItem else { return }
                 loadImage(from: newItem)
             }

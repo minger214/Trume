@@ -40,10 +40,8 @@ struct PictureWorksView: View {
                         .frame(width: geometry.size.width, height: 68)
                     
                     imageContentView
-                        .frame(
-                            width: geometry.size.width,
-                            height: geometry.size.height - 68 - 88
-                        )
+                        .frame(width: geometry.size.width)
+                        .frame(maxHeight: .infinity)
                     
                     actionButtons
                         .frame(width: geometry.size.width, height: 88)
@@ -63,10 +61,11 @@ struct PictureWorksView: View {
     private var navigationBar: some View {
         NavigationBar(
             title: "Project",
-            showBackButton: true,
-            onBack: {
-                presentationMode.wrappedValue.dismiss()
-            }
+            leadingButtons: [
+                NavigationBarButton.back {
+                    presentationMode.wrappedValue.dismiss()
+                }
+            ]
         )
         .background(
             Color.black.opacity(0.9)

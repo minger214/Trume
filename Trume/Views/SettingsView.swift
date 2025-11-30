@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+#if canImport(StoreKit)
+import StoreKit
+#endif
 
 struct SettingsView: View {
     @ObservedObject var viewModel: AppViewModel
@@ -26,15 +29,16 @@ struct SettingsView: View {
                 // Navigation Bar
                 NavigationBar(
                     title: "Settings",
-                    showBackButton: true,
+                    leadingButtons: [
+                        NavigationBarButton.back {
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                    ],
                     trailingButtons: [
                         NavigationBarButton(id: "save", icon: "checkmark") {
                             saveConfiguration()
                         }
-                    ],
-                    onBack: {
-                        presentationMode.wrappedValue.dismiss()
-                    }
+                    ]
                 )
                 
                 ScrollView {
@@ -221,6 +225,18 @@ struct SettingsView: View {
                                         set: { config.subscriptionPage.enablePaymentProcessing = $0 }
                                     )
                                 )
+                                
+                                Divider().background(Color.white.opacity(0.1))
+                                
+                                // Restore Purchases Button Toggle
+                                ConfigurationToggleRow(
+                                    title: "Restore Purchases Button",
+                                    description: "Show/hide restore purchases button in subscription page",
+                                    isOn: Binding(
+                                        get: { config.subscriptionPage.showRestorePurchasesButton },
+                                        set: { config.subscriptionPage.showRestorePurchasesButton = $0 }
+                                    )
+                                )
                             }
                         }
                         
@@ -234,6 +250,21 @@ struct SettingsView: View {
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 50)
                                 .background(Color.orange.opacity(0.8))
+                                .cornerRadius(12)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+                        
+                        // Clear All User Data Button
+                        Button(action: {
+                            clearAllUserData()
+                        }) {
+                            Text("Clear All User Data")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 50)
+                                .background(Color.red.opacity(0.8))
                                 .cornerRadius(12)
                         }
                         .padding(.horizontal, 16)
@@ -258,7 +289,19 @@ struct SettingsView: View {
     private func resetToDefaults() {
         config = .default
         viewModel.showToast(message: "Settings reset to defaults", type: .info)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            presentationMode.wrappedValue.dismiss()
+        }
     }
+    
+    private func clearAllUserData() {
+        viewModel.clearAllUserData()
+        viewModel.showToast(message: "All user data cleared", type: .success)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            presentationMode.wrappedValue.dismiss()
+        }
+    }
+    
 }
 
 // MARK: - Configuration Section Component

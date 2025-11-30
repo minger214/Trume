@@ -38,7 +38,11 @@ struct PortfolioView: View {
                 // Navigation Bar
                 NavigationBar(
                     title: "All Projects",
-                    showBackButton: true,
+                    leadingButtons: [
+                        NavigationBarButton.back {
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                    ],
                     trailingButtons: [
                         NavigationBarButton(id: "sort", icon: "arrow.up.arrow.down") {
                             sortOrder = sortOrder == .newest ? .oldest : .newest
@@ -47,10 +51,7 @@ struct PortfolioView: View {
                                 type: .info
                             )
                         }
-                    ],
-                    onBack: {
-                        presentationMode.wrappedValue.dismiss()
-                    }
+                    ]
                 )
                 
                 if sortedProjects.isEmpty {

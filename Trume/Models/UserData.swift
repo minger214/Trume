@@ -28,8 +28,8 @@ enum SubscriptionPlan: String, Codable {
     
     var price: String {
         switch self {
-        case .basic: return "$4.99/week"
-        case .premium: return "$19.99/month"
+        case .basic: return "$4.99"
+        case .premium: return "$19.99"
         }
     }
     
@@ -43,7 +43,7 @@ enum SubscriptionPlan: String, Codable {
     var period: String {
         switch self {
         case .basic: return "week"
-        case .premium: return "month"
+        case .premium: return "week"
         }
     }
     
@@ -51,7 +51,7 @@ enum SubscriptionPlan: String, Codable {
     var periodDays: Int {
         switch self {
         case .basic: return 7
-        case .premium: return 30
+        case .premium: return 7
         }
     }
 }
