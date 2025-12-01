@@ -20,6 +20,7 @@ struct PortfolioGeneratingView: View {
     @State private var generationFailed: Bool = false
     @State private var failureMessage: String?
     @State private var selectedProject: Project?
+    @State private var hasAutoSaved: Bool = false
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
@@ -209,6 +210,7 @@ struct PortfolioGeneratingView: View {
         .onAppear {
             progress = viewModel.generationProgress
             simulatedProgress = viewModel.generationProgress
+            hasAutoSaved = false
             startGeneration()
         }
         .onDisappear {
@@ -475,6 +477,13 @@ struct PortfolioGeneratingView: View {
             progress = updateProgressSafely(to: 1.0, reason: "Projects finalized")
             // 确保生成状态设置为完成
             viewModel.markGenerationCompleted()
+            // 自动保存到作品集
+            if !hasAutoSaved && canSave {
+                hasAutoSaved = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.autoSaveToPortfolio()
+                }
+            }
             return
         }
         
@@ -524,6 +533,13 @@ struct PortfolioGeneratingView: View {
             estimatedTime = 0
             // 确保生成状态设置为完成
             viewModel.markGenerationCompleted()
+            // 自动保存到作品集
+            if !hasAutoSaved && canSave {
+                hasAutoSaved = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.autoSaveToPortfolio()
+                }
+            }
             return
         }
         
@@ -559,6 +575,35 @@ struct PortfolioGeneratingView: View {
         
         // Show success message
         viewModel.showToast(message: "Projects saved successfully", type: .success)
+        
+        // Close generating view and navigate to portfolio
+        presentationMode.wrappedValue.dismiss()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.log("Setting shouldShowPortfolio flag to true.")
+            viewModel.shouldShowPortfolio = true
+        }
+    }
+    
+    private func autoSaveToPortfolio() {
+        log("autoSaveToPortfolio triggered. canSave=\(canSave)")
+        
+        guard canSave else {
+            log("Cannot auto-save: projects not ready")
+            return
+        }
+        
+        log("Auto-saving \(viewModel.currentSessionProjects.count) generated projects to portfolio.")
+        // Save all projects
+        viewModel.currentSessionProjects.forEach { project in
+            viewModel.addProject(project)
+        }
+        viewModel.currentSessionProjects = []
+        viewModel.saveCurrentSessionProjects()
+        viewModel.generationProgress = 0.0
+        
+        // Show success message
+        viewModel.showToast(message: "Projects automatically saved to portfolio", type: .success)
         
         // Close generating view and navigate to portfolio
         presentationMode.wrappedValue.dismiss()

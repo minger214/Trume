@@ -374,6 +374,11 @@ struct HomeView: View {
     private func buildTrailingButtons() -> [NavigationBarButton] {
         var buttons: [NavigationBarButton] = []
         
+        // 添加作品集图标按钮
+        buttons.append(NavigationBarButton(id: "portfolio", icon: "square.grid.2x2") {
+            showPortfolioView = true
+        })
+        
         if viewModel.featureConfig.homePage.showNotificationButton {
             buttons.append(NavigationBarButton(id: "notifications", icon: "bell") {
                 viewModel.showToast(message: "No new notifications", type: .info)
